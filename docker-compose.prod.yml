@@ -46,5 +46,8 @@ services:
 
 networks:
   internal:
+    ipam:
+      config:
+        - subnet: 10.77.140.0/24
   npm_network:
     external: true
