@@ -1,19 +1,18 @@
-import { BookOpen, Camera, Gem, Heart, Mail, MapPin, Mic, Music, Sparkles, UtensilsCrossed, type LucideIcon } from 'lucide-react';
+import { BrandIcon, type BrandIconName } from './BrandIcon';
 
-const MAP: Record<string, LucideIcon> = {
-  sparkles: Sparkles,
-  mic: Mic,
-  camera: Camera,
-  gem: Gem,
-  mail: Mail,
-  book: BookOpen,
-  map: MapPin,
-  utensils: UtensilsCrossed,
-  music: Music,
-  heart: Heart,
+const MAP: Record<string, BrandIconName> = {
+  sparkles: 'spark',
+  mic: 'mic',
+  camera: 'camera',
+  gem: 'relic',
+  mail: 'letter',
+  book: 'book',
+  map: 'pin',
+  utensils: 'pot',
+  music: 'gramophone',
+  heart: 'hearts',
 };
 
-export function TaskIcon({ name, className }: { name: string; className?: string }) {
-  const I = MAP[name] ?? Sparkles;
-  return <I className={className} />;
+export function TaskIcon({ name, className, accent, draw }: { name: string; className?: string; accent?: string; draw?: boolean }) {
+  return <BrandIcon name={MAP[name] ?? 'spark'} className={className} accent={accent} draw={draw} />;
 }

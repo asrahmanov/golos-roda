@@ -120,8 +120,8 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {tasks.map((t) => (
               <Link key={t.id} href={`/app/family/${memberships[0].family.id}/tasks#${t.id}`} className="card group p-6 transition hover:-translate-y-0.5 hover:shadow-xl">
-                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gold-500/15 text-gold-700 transition group-hover:bg-gold-500 group-hover:text-ink-950">
-                  <TaskIcon name={t.icon} className="h-5 w-5" />
+                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-cream-100 text-ink-900 transition duration-500 group-hover:bg-ink-900 group-hover:text-cream-50">
+                  <TaskIcon name={t.icon} className="h-8 w-8" />
                 </span>
                 <h3 className="mt-4 font-bold">{t.title}</h3>
                 <p className="mt-1 line-clamp-2 text-sm text-ink-500">{t.description}</p>

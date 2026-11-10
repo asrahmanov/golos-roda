@@ -45,8 +45,8 @@ export default async function TasksPage({ params }: { params: Promise<{ id: stri
           return (
             <article id={t.id} key={t.id} className={`card scroll-mt-24 p-6 sm:p-8 ${d ? 'ring-2 ring-sage-500/40' : ''}`}>
               <div className="flex items-start gap-4">
-                <span className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl ${d ? 'bg-sage-500 text-white' : 'bg-gold-500/15 text-gold-700'}`}>
-                  {d ? <CheckCircle2 className="h-6 w-6" /> : <TaskIcon name={t.icon} className="h-6 w-6" />}
+                <span className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl ${d ? 'bg-sage-500 text-white' : 'bg-cream-100 text-ink-900'}`}>
+                  {d ? <CheckCircle2 className="h-6 w-6" /> : <TaskIcon name={t.icon} className="h-8 w-8" />}
                 </span>
                 <div className="min-w-0">
                   <h3 className="font-serif text-2xl font-semibold leading-tight">{t.title}</h3>

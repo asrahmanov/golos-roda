@@ -60,7 +60,7 @@ export default async function TasksAdminPage() {
         {tasks.map((t) => (
           <details key={t.id} className="card group p-5">
             <summary className="flex cursor-pointer list-none items-center gap-4">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gold-500/15 text-gold-700"><TaskIcon name={t.icon} className="h-5 w-5" /></span>
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-cream-100 text-ink-900"><TaskIcon name={t.icon} className="h-8 w-8" /></span>
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-semibold">{t.title}</span>
                 <span className="block text-xs text-ink-400">выполнили семей: {t._count.completions}{!t.isPublished && ' · скрыто'}</span>

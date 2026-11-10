@@ -1,9 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  Archive, ArrowRight, BookOpen, Building2, Camera, FileText, GitFork, HandCoins, HandHeart, Hourglass, IdCard, Images,
-  Lock, Mic, Search, ShieldCheck, Sparkles, TreePine, Unlink, Users, UsersRound,
-} from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { db } from '@/lib/db';
 import { getSettings } from '@/lib/settings';
 import { getPublicStats } from '@/lib/stats';
@@ -14,10 +11,12 @@ import { Hero } from '@/components/site/Hero';
 import { TreeDemo } from '@/components/site/TreeDemo';
 import { Faq } from '@/components/site/Faq';
 import { SectionHead } from '@/components/site/Section';
-import { Counter, Parallax, ProgressBar, Reveal, Stagger, StaggerItem } from '@/components/ui/Motion';
+import { Counter, DrawLine, MaskReveal, Ornament, Parallax, ProgressBar, Reveal, Stagger, StaggerItem } from '@/components/ui/Motion';
+import { BrandIcon, type BrandIconName } from '@/components/ui/BrandIcon';
+import { Marquee } from '@/components/site/Marquee';
 import { TaskIcon } from '@/components/ui/TaskIcon';
 
-const ZONE_ICON = { tree: TreePine, mic: Mic, archive: Archive, search: Search, book: BookOpen } as const;
+const ZONE_ICON: Record<string, BrandIconName> = { tree: 'tree', mic: 'mic', archive: 'archive', search: 'roots', book: 'book' };
 
 export default async function HomePage() {
   const [s, stats, tasks, program, faq, stories, partners, news] = await Promise.all([
@@ -53,15 +52,17 @@ export default async function HomePage() {
           />
           <Stagger className="mt-16 grid gap-5 md:grid-cols-3">
             {[
-              { n: '01', t: 'Истории исчезают', d: 'Воспоминания часто остаются только в памяти старшего поколения.', I: Hourglass },
-              { n: '02', t: 'Архивы разрозненны', d: 'Документы и фотографии хранятся у разных родственников и на разных устройствах.', I: Images },
-              { n: '03', t: 'Связь ослабевает', d: 'Нам не всегда хватает повода, чтобы спросить родных об их жизни и корнях.', I: Unlink },
+              { n: '01', t: 'Истории исчезают', d: 'Воспоминания часто остаются только в памяти старшего поколения.', I: 'voice-fade' as const },
+              { n: '02', t: 'Архивы разрозненны', d: 'Документы и фотографии хранятся у разных родственников и на разных устройствах.', I: 'scatter' as const },
+              { n: '03', t: 'Связь ослабевает', d: 'Нам не всегда хватает повода, чтобы спросить родных об их жизни и корнях.', I: 'infinity-broken' as const },
             ].map((c) => (
-              <StaggerItem key={c.n} className="card group relative overflow-hidden p-8 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl">
-                <span className="absolute right-6 top-4 font-serif text-[5.5rem] font-bold leading-none text-cream-200 transition-colors duration-500 group-hover:text-gold-300/40">
+              <StaggerItem key={c.n} className="card spotlight group relative overflow-hidden p-8 transition-all duration-500 hover:-translate-y-1.5 hover:shadow-2xl">
+                <span className="text-outline absolute right-6 top-5 font-serif text-[5rem] font-bold leading-none text-gold-400/50 transition-colors duration-500 group-hover:text-gold-500">
                   {c.n}
                 </span>
-                <c.I className="relative h-9 w-9 text-gold-500" strokeWidth={1.5} />
+                <span className="relative grid h-20 w-20 place-items-center rounded-[1.4rem] bg-cream-100 text-ink-900 transition-all duration-500 group-hover:-rotate-3 group-hover:bg-ink-900 group-hover:text-cream-50">
+                  <BrandIcon name={c.I} className="h-12 w-12" />
+                </span>
                 <h3 className="relative mt-8 font-serif text-2xl font-semibold">{c.t}</h3>
                 <p className="relative mt-3 leading-relaxed text-ink-600">{c.d}</p>
               </StaggerItem>
@@ -98,12 +99,16 @@ export default async function HomePage() {
             </div>
           </div>
           <Reveal>
-            <Parallax offset={40} className="relative aspect-[4/5] overflow-hidden rounded-[2rem] ring-1 ring-white/10 sm:aspect-[5/4] lg:aspect-[4/5]">
-              <Image src="/img/hands.jpg" alt="Рука взрослого держит руку ребёнка" fill className="scale-110 object-cover" sizes="(min-width:1024px) 50vw, 100vw" />
-            </Parallax>
+            <MaskReveal className="relative aspect-[4/5] overflow-hidden rounded-[2rem] ring-1 ring-white/10 sm:aspect-[5/4] lg:aspect-[4/5]">
+              <Parallax offset={40} className="relative h-full w-full">
+                <Image src="/img/hands.jpg" alt="Рука взрослого держит руку ребёнка" fill className="scale-110 object-cover" sizes="(min-width:1024px) 50vw, 100vw" />
+              </Parallax>
+            </MaskReveal>
           </Reveal>
         </div>
       </section>
+
+      <Marquee dark words={['Память', 'Голос', 'Семья', 'Корни', 'Наследие', 'Связь']} />
 
       {/* Платформа */}
       <section id="platform" className="py-24 sm:py-32">
@@ -127,15 +132,15 @@ export default async function HomePage() {
         <div className="container-x mt-20">
           <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             {[
-              { I: GitFork, t: 'Генеалогическое дерево', d: 'Имена, даты и семейные связи — структура растёт по мере появления сведений.' },
-              { I: IdCard, t: 'Карточки родственников', d: 'Биография, места жизни, профессия и все связанные истории человека.' },
-              { I: Archive, t: 'Семейный архив', d: 'Фотографии, документы, аудио, видео и воспоминания в привязке к людям.' },
-              { I: UsersRound, t: 'Совместная работа', d: 'Приглашайте близких: читать, дополнять, комментировать и уточнять.' },
-              { I: Lock, t: 'Приватность', d: 'Ничего не публикуется по умолчанию. Доступ — по правилам вашей семьи.' },
+              { I: 'tree' as const, t: 'Генеалогическое дерево', d: 'Имена, даты и семейные связи — структура растёт по мере появления сведений.' },
+              { I: 'cameo' as const, t: 'Карточки родственников', d: 'Биография, места жизни, профессия и все связанные истории человека.' },
+              { I: 'archive' as const, t: 'Семейный архив', d: 'Фотографии, документы, аудио, видео и воспоминания в привязке к людям.' },
+              { I: 'together' as const, t: 'Совместная работа', d: 'Приглашайте близких: читать, дополнять, комментировать и уточнять.' },
+              { I: 'privacy' as const, t: 'Приватность', d: 'Ничего не публикуется по умолчанию. Доступ — по правилам вашей семьи.' },
             ].map((f) => (
-              <StaggerItem key={f.t} className="group rounded-3xl border border-ink-900/8 bg-cream-100/60 p-6 transition-all duration-500 hover:-translate-y-1 hover:border-gold-400/50 hover:bg-white hover:shadow-xl">
-                <span className="grid h-12 w-12 place-items-center rounded-2xl bg-ink-900 text-gold-400 transition-transform duration-500 group-hover:rotate-[-6deg] group-hover:scale-110">
-                  <f.I className="h-5 w-5" />
+              <StaggerItem key={f.t} className="spotlight group rounded-3xl border border-ink-900/8 bg-cream-100/60 p-6 transition-all duration-500 hover:-translate-y-1 hover:border-gold-400/50 hover:bg-white hover:shadow-xl">
+                <span className="grid h-[4.5rem] w-[4.5rem] place-items-center rounded-[1.3rem] bg-ink-900 text-cream-50 transition-transform duration-500 group-hover:-rotate-6 group-hover:scale-105">
+                  <BrandIcon name={f.I} accent="#e3b77e" className="h-12 w-12" />
                 </span>
                 <h3 className="mt-6 text-lg font-bold leading-snug">{f.t}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-ink-600">{f.d}</p>
@@ -143,7 +148,7 @@ export default async function HomePage() {
             ))}
           </Stagger>
           <Reveal className="mt-8 flex items-center gap-3 text-sm text-ink-500">
-            <Sparkles className="h-4 w-4 text-gold-500" />
+            <BrandIcon name="spark" draw={false} className="h-6 w-6 shrink-0 text-gold-600" />
             Следующие этапы развития — карта географии рода, архивный поиск и инструменты ИИ — появятся у будущего оператора платформы.
           </Reveal>
         </div>
@@ -154,7 +159,8 @@ export default async function HomePage() {
         <div className="container-x">
           <SectionHead center eyebrow="Как это работает" title="Пять шагов к семейной летописи" lead="Начать может один человек — а затем пригласить остальных. Пополнять архив можно в своём темпе." />
           <div className="relative mt-16">
-            <div className="absolute left-6 top-0 h-full w-px bg-gradient-to-b from-gold-400 via-gold-400/40 to-transparent md:left-0 md:top-7 md:h-px md:w-full md:bg-gradient-to-r" />
+            <DrawLine vertical className="absolute left-6 top-0 h-full w-px bg-gradient-to-b from-gold-400 via-gold-400/40 to-transparent md:hidden" />
+            <DrawLine className="absolute left-0 top-7 hidden h-px w-full bg-gradient-to-r from-gold-400 via-gold-400/50 to-transparent md:block" />
             <Stagger className="grid gap-8 md:grid-cols-5 md:gap-6" gap={0.12}>
               {[
                 { t: 'Знакомство', d: 'Узнаёте о проекте на фестивале или на сайте.', r: 'Понимание, зачем сохранять историю' },
@@ -199,7 +205,7 @@ export default async function HomePage() {
                     i % 2 === 0 ? 'bg-ink-900 text-cream-50' : 'bg-gold-500 text-ink-950'
                   }`}
                 >
-                  <TaskIcon name={t.icon} className="h-8 w-8 transition-transform duration-500 group-hover:scale-125 group-hover:rotate-6" />
+                  <TaskIcon name={t.icon} accent={i % 2 === 0 ? '#e3b77e' : '#1d1915'} className="h-14 w-14" />
                   <h3 className="mt-10 font-serif text-2xl font-semibold leading-tight">{t.title}</h3>
                   <p className="mt-3 line-clamp-4 text-sm leading-relaxed opacity-75">{t.description}</p>
                 </StaggerItem>
@@ -229,8 +235,8 @@ export default async function HomePage() {
             {FESTIVAL_ZONES.map((z) => {
               const I = ZONE_ICON[z.icon];
               return (
-                <StaggerItem key={z.name} className="group rounded-3xl bg-white/[0.04] p-6 ring-1 ring-white/10 transition-all duration-500 hover:bg-white/[0.08] hover:ring-gold-400/40">
-                  <I className="h-7 w-7 text-gold-400 transition-transform duration-500 group-hover:-translate-y-1" strokeWidth={1.5} />
+                <StaggerItem key={z.name} className="spotlight group rounded-3xl bg-white/[0.04] p-6 ring-1 ring-white/10 transition-all duration-500 hover:bg-white/[0.08] hover:ring-gold-400/40">
+                  <BrandIcon name={I} accent="#e3b77e" className="h-12 w-12 text-cream-50" />
                   <h3 className="mt-6 font-serif text-xl font-semibold leading-snug">«{z.name}»</h3>
                   <p className="mt-2 text-sm leading-relaxed text-cream-100/60">{z.what}</p>
                   <p className="mt-4 text-xs font-semibold text-gold-300">✦ {z.result}</p>
@@ -261,9 +267,11 @@ export default async function HomePage() {
       <section id="sculpture" className="relative overflow-hidden py-24 sm:py-32">
         <div className="container-x grid items-center gap-14 lg:grid-cols-2">
           <Reveal className="order-2 lg:order-1">
-            <Parallax offset={50} className="relative aspect-[4/3] overflow-hidden rounded-[2rem] shadow-2xl">
-              <Image src="/img/sculpture-2.jpg" alt="Концептуальный эскиз скульптуры в форме бесконечности" fill className="scale-110 object-cover" sizes="(min-width:1024px) 50vw, 100vw" />
-            </Parallax>
+            <MaskReveal from="left" className="relative aspect-[4/3] overflow-hidden rounded-[2rem] shadow-2xl">
+              <Parallax offset={50} className="relative h-full w-full">
+                <Image src="/img/sculpture-2.jpg" alt="Концептуальный эскиз скульптуры в форме бесконечности" fill className="scale-110 object-cover" sizes="(min-width:1024px) 50vw, 100vw" />
+              </Parallax>
+            </MaskReveal>
             <p className="mt-3 text-xs text-ink-400">Концептуальный эскиз. Материалы, размеры и место установки подлежат согласованию.</p>
           </Reveal>
           <div className="order-1 lg:order-2">
@@ -299,12 +307,12 @@ export default async function HomePage() {
           <SectionHead center eyebrow="Измеримый старт" title="Помогите превратить идею в действующий проект" />
           <div className="mx-auto mt-14 grid max-w-5xl gap-5 md:grid-cols-2">
             {[
-              { v: stats.families, t: famTarget, l: 'семей-участников', I: Users },
-              { v: stats.trees, t: treeTarget, l: 'семейных деревьев', I: TreePine },
+              { v: stats.families, t: famTarget, l: 'семей-участников', I: 'family' as const },
+              { v: stats.trees, t: treeTarget, l: 'семейных деревьев', I: 'oak' as const },
             ].map((k) => (
               <Reveal key={k.l} className="card p-8 sm:p-10">
                 <div className="flex items-start justify-between">
-                  <k.I className="h-8 w-8 text-gold-500" strokeWidth={1.5} />
+                  <BrandIcon name={k.I} className="h-14 w-14 text-ink-900" />
                   <span className="chip bg-gold-500/12 text-gold-700">цель: {k.t}</span>
                 </div>
                 <div className="mt-8 font-serif text-6xl font-semibold sm:text-7xl">
@@ -397,15 +405,15 @@ export default async function HomePage() {
             />
             <Stagger className="mt-10 grid gap-3">
               {[
-                { I: HandCoins, t: 'Пожертвование', d: 'Помочь финансировать запуск фестиваля и платформы', k: 'DONATION' },
-                { I: Building2, t: 'Площадка и ресурсы', d: 'Предоставить пространство, технику, услуги', k: 'VENUE' },
-                { I: HandHeart, t: 'Профессиональное участие', d: 'IT, генеалогия, фото и видео, волонтёрство', k: 'PROFESSIONAL' },
-                { I: ShieldCheck, t: 'Стать оператором', d: 'Принять проект на долгосрочное развитие', k: 'OPERATOR' },
+                { I: 'donate' as const, t: 'Пожертвование', d: 'Помочь финансировать запуск фестиваля и платформы', k: 'DONATION' },
+                { I: 'venue' as const, t: 'Площадка и ресурсы', d: 'Предоставить пространство, технику, услуги', k: 'VENUE' },
+                { I: 'craft' as const, t: 'Профессиональное участие', d: 'IT, генеалогия, фото и видео, волонтёрство', k: 'PROFESSIONAL' },
+                { I: 'operator' as const, t: 'Стать оператором', d: 'Принять проект на долгосрочное развитие', k: 'OPERATOR' },
               ].map((x) => (
                 <StaggerItem key={x.t}>
-                  <Link href={`/support?kind=${x.k}#form`} className="group flex items-center gap-5 rounded-2xl border border-ink-900/8 bg-white p-5 transition-all duration-300 hover:border-gold-400 hover:shadow-lg">
-                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-cream-100 text-gold-600 transition-colors group-hover:bg-gold-500 group-hover:text-ink-950">
-                      <x.I className="h-5 w-5" />
+                  <Link href={`/support?kind=${x.k}#form`} className="spotlight group flex items-center gap-5 rounded-2xl border border-ink-900/8 bg-white p-5 transition-all duration-300 hover:border-gold-400 hover:shadow-lg">
+                    <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-cream-100 text-ink-900 transition-colors duration-500 group-hover:bg-ink-900 group-hover:text-cream-50">
+                      <BrandIcon name={x.I} className="h-9 w-9" />
                     </span>
                     <span className="flex-1">
                       <span className="block font-bold">{x.t}</span>
@@ -419,9 +427,9 @@ export default async function HomePage() {
           </div>
           <Reveal>
             <div className="relative">
-              <div className="relative aspect-[4/3] overflow-hidden rounded-[2rem] shadow-2xl">
+              <MaskReveal from="right" className="relative aspect-[4/3] overflow-hidden rounded-[2rem] shadow-2xl">
                 <Image src="/img/team.jpg" alt="Команда «Легенда»" fill className="object-cover" sizes="(min-width:1024px) 50vw, 100vw" />
-              </div>
+              </MaskReveal>
               <div className="absolute -bottom-6 left-6 right-6 rounded-2xl bg-ink-900 p-5 text-cream-50 shadow-2xl sm:left-auto sm:right-8 sm:w-72">
                 <p className="eyebrow">Команда «Легенда»</p>
                 <p className="mt-2 text-sm text-cream-100/75">Участники тренинга «Парадокс» — запускаем проект и передаём его постоянному оператору.</p>
@@ -468,7 +476,7 @@ export default async function HomePage() {
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={fileUrl(n.coverId, true)!} alt="" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
                       ) : (
-                        <div className="grid h-full place-items-center"><FileText className="h-10 w-10 text-gold-400/40" /></div>
+                        <div className="grid h-full place-items-center"><BrandIcon name="news" accent="#c58d4f" className="h-16 w-16 text-cream-50/40" /></div>
                       )}
                     </div>
                     <p className="mt-4 text-xs font-semibold text-gold-700">{formatDate(n.publishedAt)}</p>
@@ -491,20 +499,23 @@ export default async function HomePage() {
         </section>
       )}
 
+      <Marquee reverse words={['Расспросите старших', 'Оцифруйте фото', 'Запишите голос', 'Пригласите родных']} className="border-y border-ink-900/8" />
+
       {/* CTA */}
       <section className="px-4 pb-20 sm:px-8">
         <Reveal className="relative mx-auto max-w-7xl overflow-hidden rounded-[2.5rem] bg-ink-900 px-6 py-20 text-center text-cream-50 sm:px-12 sm:py-28">
           <div className="grain pointer-events-none absolute inset-0 opacity-[0.07]" />
           <div className="pointer-events-none absolute left-1/2 top-1/2 h-96 w-96 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold-500/20 blur-[100px]" />
           <div className="relative">
+            <Ornament dark className="mb-6" />
             <p className="eyebrow">Начните сегодня</p>
             <h2 className="h-display mx-auto mt-5 max-w-3xl text-[clamp(2.4rem,6vw,4.5rem)] text-balance">
               Пока близкие рядом — <span className="text-gold-400">запишите их истории</span>
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-lg text-cream-100/70">Создание семейного пространства бесплатно и занимает пару минут.</p>
             <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
-              <Link href="/register" className="btn-gold px-8 py-4 text-[15px]">Создать семейное дерево</Link>
-              <Link href="/festival#register" className="btn-ghost px-8 py-4 text-[15px] text-cream-50">Прийти на фестиваль</Link>
+              <Link href="/register" data-magnetic className="btn-gold px-8 py-4 text-[15px]">Создать семейное дерево</Link>
+              <Link href="/festival#register" data-magnetic className="btn-ghost px-8 py-4 text-[15px] text-cream-50">Прийти на фестиваль</Link>
             </div>
           </div>
         </Reveal>

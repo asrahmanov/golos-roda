@@ -61,8 +61,8 @@ export function SiteHeader({ loggedIn, announcement }: { loggedIn: boolean; anno
                 key={n.href}
                 href={n.href}
                 className={cn(
-                  'rounded-full px-4 py-2 text-sm font-medium transition',
-                  dark ? 'text-cream-100/80 hover:bg-white/8 hover:text-cream-50' : 'text-ink-700 hover:bg-ink-900/5 hover:text-ink-900',
+                  'nav-link relative px-4 py-2 text-sm font-medium transition-colors',
+                  dark ? 'text-cream-100/80 hover:text-cream-50' : 'text-ink-700 hover:text-ink-900',
                   pathname === n.href && (dark ? 'text-gold-300' : 'text-gold-600'),
                 )}
               >
@@ -80,7 +80,7 @@ export function SiteHeader({ loggedIn, announcement }: { loggedIn: boolean; anno
                 <Link href="/login" className={cn('btn-sm btn', dark ? 'text-cream-50 hover:bg-white/10' : 'text-ink-800 hover:bg-ink-900/5')}>
                   Войти
                 </Link>
-                <Link href="/register" className="btn-gold btn-sm">
+                <Link href="/register" data-magnetic className="btn-gold btn-sm">
                   Создать дерево
                 </Link>
               </>

@@ -4,8 +4,22 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { useRef } from 'react';
-import { ArrowRight, CalendarHeart } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+import { BrandIcon } from '@/components/ui/BrandIcon';
 import { Countdown } from './Countdown';
+
+const EMBERS = [
+  { x: 6, d: 16, delay: 0, drift: 40, s: 3 },
+  { x: 14, d: 21, delay: 6, drift: -30, s: 4 },
+  { x: 23, d: 18, delay: 11, drift: 25, s: 2 },
+  { x: 35, d: 24, delay: 3, drift: 50, s: 3 },
+  { x: 47, d: 19, delay: 14, drift: -45, s: 2 },
+  { x: 58, d: 23, delay: 8, drift: 30, s: 4 },
+  { x: 66, d: 17, delay: 1, drift: -20, s: 3 },
+  { x: 74, d: 22, delay: 12, drift: 35, s: 2 },
+  { x: 83, d: 20, delay: 5, drift: -40, s: 3 },
+  { x: 92, d: 25, delay: 9, drift: 20, s: 4 },
+];
 
 export function Hero({
   eyebrow,
@@ -33,16 +47,43 @@ export function Hero({
       <div className="pointer-events-none absolute -left-40 top-20 h-[32rem] w-[32rem] rounded-full bg-gold-500/15 blur-[120px]" />
       <div className="pointer-events-none absolute -right-20 bottom-0 h-[28rem] w-[28rem] rounded-full bg-gold-700/20 blur-[120px]" />
 
-      <svg className="pointer-events-none absolute left-1/2 top-1/2 -z-0 w-[140%] max-w-none -translate-x-1/2 -translate-y-1/2 opacity-[0.07] lg:w-[110%]" viewBox="0 0 400 200" fill="none">
+      <svg className="pointer-events-none absolute left-1/2 top-1/2 -z-0 w-[140%] max-w-none -translate-x-1/2 -translate-y-1/2 lg:w-[110%]" viewBox="0 0 400 200" fill="none" aria-hidden>
+        <defs>
+          <radialGradient id="hero-light">
+            <stop offset="0" stopColor="#f3d7ad" />
+            <stop offset="0.35" stopColor="#d9a86c" stopOpacity="0.6" />
+            <stop offset="1" stopColor="#d9a86c" stopOpacity="0" />
+          </radialGradient>
+        </defs>
         <motion.path
+          id="hero-inf"
           d="M200 100c-30-42-55-66-92-66a66 66 0 0 0 0 132c37 0 62-24 92-66zm0 0c30 42 55 66 92 66a66 66 0 0 0 0-132c-37 0-62 24-92 66z"
           stroke="#d9a86c"
+          strokeOpacity="0.09"
           strokeWidth="1.2"
           initial={{ pathLength: 0 }}
           animate={{ pathLength: 1 }}
           transition={{ duration: 4, ease: 'easeInOut' }}
         />
+        <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.5, duration: 1.5 }}>
+          <circle r="7" fill="url(#hero-light)">
+            <animateMotion dur="14s" repeatCount="indefinite" path="M200 100c-30-42-55-66-92-66a66 66 0 0 0 0 132c37 0 62-24 92-66zm0 0c30 42 55 66 92 66a66 66 0 0 0 0-132c-37 0-62 24-92 66z" />
+          </circle>
+          <circle r="5" fill="url(#hero-light)">
+            <animateMotion dur="14s" begin="-7s" repeatCount="indefinite" keyPoints="1;0" keyTimes="0;1" calcMode="linear" path="M200 100c-30-42-55-66-92-66a66 66 0 0 0 0 132c37 0 62-24 92-66zm0 0c30 42 55 66 92 66a66 66 0 0 0 0-132c-37 0-62 24-92 66z" />
+          </circle>
+        </motion.g>
       </svg>
+
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden>
+        {EMBERS.map((e, i) => (
+          <span
+            key={i}
+            className="ember"
+            style={{ left: `${e.x}%`, animationDuration: `${e.d}s`, animationDelay: `${e.delay}s`, ['--drift' as string]: `${e.drift}px`, width: e.s, height: e.s }}
+          />
+        ))}
+      </div>
 
       <div className="container-x relative grid min-h-[calc(100svh-6rem)] items-center gap-10 py-14 lg:grid-cols-[1.05fr_1fr] lg:gap-16 lg:py-20">
         <motion.div style={{ y: textY }} className="relative z-10">
@@ -77,12 +118,12 @@ export function Hero({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.75 }}
           >
-            <Link href="/register" className="btn-gold group px-7 py-4 text-[15px]">
+            <Link href="/register" data-magnetic className="btn-gold group px-7 py-4 text-[15px]">
               Начать семейное дерево
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
-            <Link href="/festival" className="btn-ghost px-7 py-4 text-[15px] text-cream-50">
-              <CalendarHeart className="h-4 w-4 text-gold-400" />
+            <Link href="/festival" data-magnetic className="btn-ghost px-7 py-4 text-[15px] text-cream-50">
+              <BrandIcon name="calendar" draw={false} accent="#e3b77e" className="h-5 w-5 text-gold-400" />
               Фестиваль {festivalDateText}
             </Link>
           </motion.div>

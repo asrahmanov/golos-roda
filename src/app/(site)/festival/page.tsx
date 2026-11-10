@@ -1,20 +1,20 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import { Archive, BookOpen, CalendarDays, Clock, MapPin, Mic, Search, ShieldCheck, TreePine, Users } from 'lucide-react';
+import { BrandIcon, type BrandIconName } from '@/components/ui/BrandIcon';
 import { db } from '@/lib/db';
 import { getSettings } from '@/lib/settings';
 import { FESTIVAL_ZONES, FESTIVAL_ZONE_NAMES } from '@/lib/constants';
 import { Countdown } from '@/components/site/Countdown';
 import { FestivalForm } from '@/components/site/PublicForms';
 import { SectionHead } from '@/components/site/Section';
-import { Reveal, Stagger, StaggerItem } from '@/components/ui/Motion';
+import { MaskReveal, Reveal, Stagger, StaggerItem, TitleReveal } from '@/components/ui/Motion';
 
 export const metadata: Metadata = {
   title: 'Семейный фестиваль 22 ноября',
   description: 'Семейный фестиваль «Связь поколений» в Москве: создайте семейное дерево, оцифруйте фото, запишите воспоминания. Регистрация семей.',
 };
 
-const ZONE_ICON = { tree: TreePine, mic: Mic, archive: Archive, search: Search, book: BookOpen } as const;
+const ZONE_ICON: Record<string, BrandIconName> = { tree: 'tree', mic: 'mic', archive: 'archive', search: 'roots', book: 'book' };
 
 export default async function FestivalPage() {
   const [s, program] = await Promise.all([getSettings(), db.programItem.findMany({ orderBy: { order: 'asc' } })]);
@@ -22,21 +22,20 @@ export default async function FestivalPage() {
   return (
     <>
       <section className="relative overflow-hidden bg-ink-900 text-cream-50">
-        <div className="absolute inset-0 opacity-30">
+        <MaskReveal className="absolute inset-0 opacity-30">
           <Image src="/img/sculpture.jpg" alt="" fill className="object-cover" priority sizes="100vw" />
-        </div>
+        </MaskReveal>
         <div className="absolute inset-0 bg-gradient-to-r from-ink-900 via-ink-900/90 to-ink-900/40" />
         <div className="container-x relative py-20 sm:py-28">
           <Reveal><p className="eyebrow">Публичный старт проекта</p></Reveal>
-          <Reveal delay={0.1}>
-            <h1 className="h-display mt-5 max-w-4xl text-[clamp(2.8rem,7vw,6rem)]">
-              Семейный фестиваль <span className="text-gold-400">«Связь поколений»</span>
-            </h1>
-          </Reveal>
+          <h1 className="h-display mt-5 max-w-4xl text-[clamp(2.8rem,7vw,6rem)]">
+            <TitleReveal delay={0.1}>Семейный фестиваль</TitleReveal>
+            <TitleReveal delay={0.22} className="text-gold-400">«Связь поколений»</TitleReveal>
+          </h1>
           <Reveal delay={0.2} className="mt-8 flex flex-wrap gap-3 text-sm">
-            <span className="chip bg-white/10 px-4 py-2"><CalendarDays className="h-4 w-4 text-gold-400" /> {s.festivalDateText}</span>
-            <span className="chip bg-white/10 px-4 py-2"><MapPin className="h-4 w-4 text-gold-400" /> {s.festivalVenue}{s.festivalAddress ? `, ${s.festivalAddress}` : ''}</span>
-            <span className="chip bg-white/10 px-4 py-2"><Users className="h-4 w-4 text-gold-400" /> Вход свободный, для всей семьи</span>
+            <span className="chip bg-white/10 px-4 py-2"><BrandIcon name="calendar" draw={false} accent="#e3b77e" className="h-5 w-5" /> {s.festivalDateText}</span>
+            <span className="chip bg-white/10 px-4 py-2"><BrandIcon name="pin" draw={false} accent="#e3b77e" className="h-5 w-5" /> {s.festivalVenue}{s.festivalAddress ? `, ${s.festivalAddress}` : ''}</span>
+            <span className="chip bg-white/10 px-4 py-2"><BrandIcon name="family" draw={false} accent="#e3b77e" className="h-5 w-5" /> Вход свободный, для всей семьи</span>
           </Reveal>
           <Reveal delay={0.3} className="mt-10"><Countdown target={s.festivalDate} /></Reveal>
         </div>
@@ -53,16 +52,16 @@ export default async function FestivalPage() {
             {FESTIVAL_ZONES.map((z) => {
               const I = ZONE_ICON[z.icon];
               return (
-                <StaggerItem key={z.name} className="card p-8">
-                  <I className="h-8 w-8 text-gold-500" strokeWidth={1.5} />
+                <StaggerItem key={z.name} className="card spotlight group p-8">
+                  <BrandIcon name={I} className="h-14 w-14 text-ink-900" />
                   <h3 className="mt-6 font-serif text-2xl font-semibold">«{z.name}»</h3>
                   <p className="mt-3 text-ink-600">{z.what}</p>
                   <p className="mt-5 border-t border-ink-900/8 pt-4 text-sm font-semibold text-gold-700">Семья получает: {z.result.toLowerCase()}</p>
                 </StaggerItem>
               );
             })}
-            <StaggerItem className="rounded-3xl bg-ink-900 p-8 text-cream-50">
-              <ShieldCheck className="h-8 w-8 text-gold-400" strokeWidth={1.5} />
+            <StaggerItem className="spotlight group rounded-3xl bg-ink-900 p-8 text-cream-50">
+              <BrandIcon name="shield" accent="#e3b77e" className="h-14 w-14 text-cream-50" />
               <h3 className="mt-6 font-serif text-2xl font-semibold">Бережно к материалам</h3>
               <p className="mt-3 text-cream-100/70">
                 Оригиналы документов остаются у владельцев. Записи и фото публикуются только с разрешения. Волонтёры не получают доступ к семейным архивам.
@@ -82,7 +81,7 @@ export default async function FestivalPage() {
                   <span className="absolute -left-[2.45rem] top-6 h-3 w-3 rounded-full bg-gold-500 ring-4 ring-cream-100" />
                   <div className="card p-6">
                     <div className="flex flex-wrap items-center gap-3">
-                      <span className="chip bg-ink-900 text-gold-300"><Clock className="h-3.5 w-3.5" /> {p.time}</span>
+                      <span className="chip bg-ink-900 text-gold-300"><BrandIcon name="clock" draw={false} accent="#e3b77e" strokeWidth={2.4} className="h-4 w-4" /> {p.time}</span>
                       {p.zone && <span className="chip bg-gold-500/12 text-gold-700">{p.zone}</span>}
                     </div>
                     <h3 className="mt-3 text-lg font-bold">{p.title}</h3>
@@ -101,9 +100,9 @@ export default async function FestivalPage() {
           <div>
             <SectionHead dark eyebrow="Регистрация" title="Приходите всей семьёй" lead="Предварительная регистрация поможет нам подготовить волонтёров и оборудование. Мы напомним о фестивале ближе к дате." />
             <Reveal delay={0.2} className="mt-10 space-y-4 text-cream-100/70">
-              <p className="flex gap-3"><span className="text-gold-400">✦</span> Возьмите семейные фотографии и документы — оцифруем на месте.</p>
-              <p className="flex gap-3"><span className="text-gold-400">✦</span> Приводите старшее поколение — запишем их воспоминания.</p>
-              <p className="flex gap-3"><span className="text-gold-400">✦</span> Волонтёры помогут зарегистрироваться на платформе и начать дерево.</p>
+              <p className="flex gap-3"><BrandIcon name="camera" draw={false} accent="#e3b77e" className="h-7 w-7 shrink-0 text-cream-50" /> Возьмите семейные фотографии и документы — оцифруем на месте.</p>
+              <p className="flex gap-3"><BrandIcon name="mic" draw={false} accent="#e3b77e" className="h-7 w-7 shrink-0 text-cream-50" /> Приводите старшее поколение — запишем их воспоминания.</p>
+              <p className="flex gap-3"><BrandIcon name="tree" draw={false} accent="#e3b77e" className="h-7 w-7 shrink-0 text-cream-50" /> Волонтёры помогут зарегистрироваться на платформе и начать дерево.</p>
             </Reveal>
           </div>
           <Reveal className="rounded-[2rem] bg-white/[0.04] p-6 ring-1 ring-white/10 sm:p-10">

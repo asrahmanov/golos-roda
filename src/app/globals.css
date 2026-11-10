@@ -111,3 +111,85 @@
 
 .scrollbar-none::-webkit-scrollbar { display: none; }
 .scrollbar-none { scrollbar-width: none; }
+
+/* ---------- Фирменные эффекты ---------- */
+.spotlight { position: relative; isolation: isolate; }
+.spotlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s;
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(217, 168, 108, 0.16), transparent 60%);
+}
+.spotlight::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  padding: 1px;
+  opacity: 0;
+  transition: opacity 0.5s;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(217, 168, 108, 0.75), transparent 70%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+.spotlight:hover::before, .spotlight:hover::after { opacity: 1; }
+
+.brand-icon .bi-accent { transform-box: fill-box; transform-origin: center; transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.group:hover .brand-icon .bi-accent { transform: scale(1.22) rotate(-8deg); }
+
+[data-magnetic] { transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1); will-change: transform; }
+
+.text-outline { -webkit-text-fill-color: transparent; -webkit-text-stroke: 1.2px currentColor; }
+.marquee { --marquee-color: currentColor; }
+.marquee .text-outline { -webkit-text-stroke-color: var(--color-gold-500); }
+.marquee-track { animation: marquee 38s linear infinite; }
+.marquee-reverse { animation-direction: reverse; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+.ember {
+  position: absolute;
+  bottom: -10px;
+  width: 4px;
+  height: 4px;
+  border-radius: 9999px;
+  background: #e3b77e;
+  box-shadow: 0 0 10px 2px rgba(227, 183, 126, 0.6);
+  opacity: 0;
+  animation: ember linear infinite;
+}
+@keyframes ember {
+  0% { transform: translate3d(0, 0, 0) scale(0.6); opacity: 0; }
+  15% { opacity: 0.9; }
+  100% { transform: translate3d(var(--drift, 30px), -95vh, 0) scale(1.1); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track, .ember { animation: none; }
+  .ember { display: none; }
+}
+
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0.3rem;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.nav-link:hover::after { transform: scaleX(1); transform-origin: left; }
+
+.logo-mark path { stroke-dasharray: 1; stroke-dashoffset: 0; }
+.group:hover .logo-mark path { animation: logo-redraw 1.2s cubic-bezier(0.65, 0, 0.35, 1); }
+@keyframes logo-redraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }

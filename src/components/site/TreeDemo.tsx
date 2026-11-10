@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Camera, FileText, Mic } from 'lucide-react';
+import { BrandIcon, type BrandIconName } from '@/components/ui/BrandIcon';
 
 type N = { id: string; x: number; y: number; name: string; years: string; tone: 'gold' | 'ink' | 'cream' };
 
@@ -42,9 +42,9 @@ export function TreeDemo() {
               d={d}
               stroke="#d9a86c"
               strokeOpacity="0.6"
-              strokeWidth="1.5"
+              strokeWidth="0.4"
+              strokeLinecap="round"
               fill="none"
-              vectorEffect="non-scaling-stroke"
               initial={{ pathLength: 0 }}
               whileInView={{ pathLength: 1 }}
               viewport={{ once: true }}
@@ -85,9 +85,9 @@ export function TreeDemo() {
           viewport={{ once: true }}
           transition={{ delay: 1.8 }}
         >
-          {[Camera, Mic, FileText].map((I, i) => (
-            <span key={i} className="grid h-8 w-8 place-items-center rounded-full bg-white/8 text-gold-300 ring-1 ring-white/10">
-              <I className="h-4 w-4" />
+          {(['camera', 'mic', 'letter'] as BrandIconName[]).map((n) => (
+            <span key={n} className="grid h-9 w-9 place-items-center rounded-full bg-white/8 text-cream-50 ring-1 ring-white/10">
+              <BrandIcon name={n} draw={false} accent="#e3b77e" strokeWidth={2.2} className="h-5 w-5" />
             </span>
           ))}
         </motion.div>

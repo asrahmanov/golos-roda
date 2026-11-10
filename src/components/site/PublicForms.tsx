@@ -3,7 +3,8 @@
 import { useActionState, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { PartyPopper, Minus, Plus } from 'lucide-react';
+import { Minus, Plus } from 'lucide-react';
+import { BrandIcon } from '@/components/ui/BrandIcon';
 import { festivalRegisterAction, partnerRequestAction } from '@/actions/public';
 import { FormMessage, SubmitButton } from '@/components/ui/Form';
 import { REQUEST_KIND_LABEL } from '@/lib/constants';
@@ -32,7 +33,7 @@ function Success({ text, dark = true }: { text: string; dark?: boolean }) {
   return (
     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="py-10 text-center">
       <motion.div initial={{ rotate: -20, scale: 0 }} animate={{ rotate: 0, scale: 1 }} transition={{ type: 'spring', delay: 0.1 }}>
-        <PartyPopper className="mx-auto h-14 w-14 text-gold-400" />
+        <BrandIcon name="celebrate" accent={dark ? '#e3b77e' : '#c58d4f'} className={cn('mx-auto h-20 w-20', dark ? 'text-cream-50' : 'text-ink-900')} />
       </motion.div>
       <h3 className={cn('mt-6 font-serif text-3xl font-semibold', dark ? 'text-cream-50' : 'text-ink-900')}>Спасибо!</h3>
       <p className={cn('mx-auto mt-3 max-w-md', dark ? 'text-cream-100/70' : 'text-ink-600')}>{text}</p>
