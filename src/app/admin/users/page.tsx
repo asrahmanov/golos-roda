@@ -1,7 +1,7 @@
 import { db } from '@/lib/db';
 import { requireAdmin } from '@/lib/auth';
 import { formatDate, initials, timeAgo } from '@/lib/utils';
-import { createUserAction, resetPasswordAction, toggleAdminAction, toggleBlockUserAction } from '@/actions/admin';
+import { createUserAction, resetPasswordAction, toggleAdminAction, toggleBlockUserAction, verifyUserEmailAction } from '@/actions/admin';
 import { ConfirmButton, SubmitButton } from '@/components/ui/Form';
 import { ActionForm } from '@/components/admin/ActionForm';
 
@@ -47,6 +47,7 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
                   {u.name}
                   {u.role === 'ADMIN' && <span className="chip ml-2 bg-gold-500/15 text-gold-700">админ</span>}
                   {u.isBlocked && <span className="chip ml-2 bg-rose-500/12 text-rose-500">заблокирован</span>}
+                  {!u.emailVerifiedAt && <span className="chip ml-2 bg-ink-900/6 text-ink-500">почта не подтверждена</span>}
                 </p>
                 <p className="truncate text-sm text-ink-500">{u.email}{u.phone && ` · ${u.phone}`}</p>
               </div>
@@ -58,6 +59,12 @@ export default async function UsersPage({ searchParams }: { searchParams: Promis
             </p>
             {u.id !== admin.id ? (
               <div className="flex flex-wrap items-start gap-2">
+                {!u.emailVerifiedAt && (
+                  <form action={verifyUserEmailAction}>
+                    <input type="hidden" name="id" value={u.id} />
+                    <ConfirmButton message="Подтвердить почту пользователя вручную?" className="btn-ghost btn-sm">Подтвердить почту</ConfirmButton>
+                  </form>
+                )}
                 <ActionForm action={resetPasswordAction} className="max-w-xs">
                   <input type="hidden" name="id" value={u.id} />
                   <SubmitButton className="btn-ghost btn-sm" pendingText="…">Сбросить пароль</SubmitButton>

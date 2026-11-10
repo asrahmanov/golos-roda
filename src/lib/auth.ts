@@ -65,6 +65,7 @@ export const getCurrentUser = cache(async () => {
 export async function requireUser() {
   const user = await getCurrentUser();
   if (!user) redirect('/login');
+  if (!user.emailVerifiedAt && user.role !== 'ADMIN') redirect('/verify-email');
   return user;
 }
 

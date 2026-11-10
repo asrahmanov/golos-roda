@@ -80,6 +80,12 @@ export async function toggleAdminAction(fd: FormData) {
   revalidatePath('/admin/users');
 }
 
+export async function verifyUserEmailAction(fd: FormData) {
+  await requireAdmin();
+  await db.user.updateMany({ where: { id: str(fd.get('id')), emailVerifiedAt: null }, data: { emailVerifiedAt: new Date() } });
+  revalidatePath('/admin/users');
+}
+
 export async function resetPasswordAction(_: ActionState, fd: FormData): Promise<ActionState> {
   await requireAdmin();
   const id = str(fd.get('id'));
@@ -95,7 +101,7 @@ export async function createUserAction(_: ActionState, fd: FormData): Promise<Ac
   if (!email || !name) return { error: 'Укажите имя и почту' };
   if (await db.user.findUnique({ where: { email } })) return { error: 'Такой пользователь уже есть' };
   const password = crypto.randomBytes(6).toString('base64url');
-  await db.user.create({ data: { email, name, passwordHash: await hashPassword(password), role: fd.get('admin') === 'on' ? 'ADMIN' : 'USER' } });
+  await db.user.create({ data: { email, name, emailVerifiedAt: new Date(), passwordHash: await hashPassword(password), role: fd.get('admin') === 'on' ? 'ADMIN' : 'USER' } });
   revalidatePath('/admin/users');
   return { ok: true, message: `Пользователь создан. Пароль: ${password}` };
 }

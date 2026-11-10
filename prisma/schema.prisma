@@ -85,6 +85,7 @@ model User {
   role         UserRole  @default(USER)
   isBlocked    Boolean   @default(false)
   sessionVer   Int       @default(0)
+  emailVerifiedAt DateTime?
   createdAt    DateTime  @default(now())
   lastSeenAt   DateTime?
 
@@ -97,6 +98,26 @@ model User {
   completions    TaskCompletion[]
   invitesCreated Invite[]
   files          StoredFile[]
+  emailTokens    EmailToken[]
+}
+
+enum EmailTokenKind {
+  VERIFY
+  RESET
+}
+
+model EmailToken {
+  id        String         @id @default(cuid())
+  tokenHash String         @unique
+  kind      EmailTokenKind
+  userId    String
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  next      String?
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime       @default(now())
+
+  @@index([userId, kind])
 }
 
 model Family {

@@ -12,7 +12,7 @@ export const DEFAULT_SETTINGS = {
   festivalVenue: 'Площадка уточняется',
   festivalAddress: 'Москва',
   launchDateText: 'до 28 ноября 2026',
-  contactEmail: 'hello@svyaz-pokoleny.ru',
+  contactEmail: 'info@svyaz-pokoleny.ru',
   contactPhone: '',
   telegram: '',
   vk: '',

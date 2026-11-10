@@ -3,7 +3,8 @@
 import { redirect } from 'next/navigation';
 import { headers } from 'next/headers';
 import { db } from '@/lib/db';
-import { createSession, destroySession, hashPassword, rateLimit, verifyPassword, requireUser } from '@/lib/auth';
+import { createSession, destroySession, getCurrentUser, hashPassword, rateLimit, verifyPassword, requireUser } from '@/lib/auth';
+import { findValidToken, sendPasswordReset, sendVerification } from '@/lib/email-tokens';
 import { isEmail, str } from '@/lib/utils';
 import type { ActionState } from '@/components/ui/Form';
 
@@ -30,7 +31,82 @@ export async function registerAction(_: ActionState, fd: FormData): Promise<Acti
   if (exists) return { error: 'Пользователь с такой почтой уже зарегистрирован. Войдите.' };
   const user = await db.user.create({ data: { name, email, passwordHash: await hashPassword(password) } });
   await createSession(user.id, user.sessionVer);
-  redirect(next === '/app' ? '/app?welcome=1' : next);
+  try {
+    await sendVerification(user, next);
+  } catch (e) {
+    console.error('verify mail failed', e);
+  }
+  redirect('/verify-email');
+}
+
+export async function resendVerificationAction(_: ActionState): Promise<ActionState> {
+  const user = await getCurrentUser();
+  if (!user) redirect('/login');
+  if (user.emailVerifiedAt) redirect('/app');
+  if (!rateLimit(`resend:${user.id}`, 3, 15 * 60 * 1000)) return { error: 'Письмо уже отправлено несколько раз. Подождите 15 минут.' };
+  const pending = await db.emailToken.findFirst({ where: { userId: user.id, kind: 'VERIFY', usedAt: null }, select: { next: true } });
+  try {
+    await sendVerification(user, pending?.next);
+  } catch (e) {
+    console.error('verify mail failed', e);
+    return { error: 'Не удалось отправить письмо. Попробуйте позже или напишите нам.' };
+  }
+  return { ok: true, message: `Письмо отправлено на ${user.email}` };
+}
+
+export async function changeUnverifiedEmailAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  const user = await getCurrentUser();
+  if (!user) redirect('/login');
+  if (user.emailVerifiedAt) redirect('/app');
+  const email = str(fd.get('email'), 200).toLowerCase();
+  if (!isEmail(email)) return { error: 'Проверьте адрес электронной почты' };
+  if (!rateLimit(`resend:${user.id}`, 3, 15 * 60 * 1000)) return { error: 'Слишком много попыток. Подождите 15 минут.' };
+  if (email !== user.email) {
+    if (await db.user.findUnique({ where: { email } })) return { error: 'Этот адрес уже занят другим аккаунтом' };
+    await db.user.update({ where: { id: user.id }, data: { email } });
+  }
+  try {
+    await sendVerification({ ...user, email });
+  } catch (e) {
+    console.error('verify mail failed', e);
+    return { error: 'Не удалось отправить письмо. Попробуйте позже.' };
+  }
+  return { ok: true, message: `Письмо отправлено на ${email}` };
+}
+
+export async function forgotPasswordAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  const email = str(fd.get('email'), 200).toLowerCase();
+  if (!isEmail(email)) return { error: 'Проверьте адрес электронной почты' };
+  if (!rateLimit(`forgot:${await clientIp()}`, 5) || !rateLimit(`forgot:${email}`, 3)) {
+    return { error: 'Слишком много запросов. Попробуйте позже.' };
+  }
+  const user = await db.user.findUnique({ where: { email } });
+  if (user && !user.isBlocked) {
+    try {
+      await sendPasswordReset(user);
+    } catch (e) {
+      console.error('reset mail failed', e);
+      return { error: 'Не удалось отправить письмо. Попробуйте позже.' };
+    }
+  }
+  return { ok: true, message: 'Если такой адрес зарегистрирован, мы отправили на него ссылку для смены пароля. Проверьте также папку «Спам».' };
+}
+
+export async function resetPasswordByTokenAction(_: ActionState, fd: FormData): Promise<ActionState> {
+  const token = str(fd.get('token'), 200);
+  const password = str(fd.get('password'), 200);
+  if (password.length < 8) return { error: 'Пароль должен быть не короче 8 символов' };
+  const row = await findValidToken(token, 'RESET');
+  if (!row) return { error: 'Ссылка устарела или уже использована. Запросите новую.' };
+  const [, user] = await db.$transaction([
+    db.emailToken.update({ where: { id: row.id }, data: { usedAt: new Date() } }),
+    db.user.update({
+      where: { id: row.userId },
+      data: { passwordHash: await hashPassword(password), sessionVer: { increment: 1 }, emailVerifiedAt: row.user.emailVerifiedAt ?? new Date() },
+    }),
+  ]);
+  await createSession(user.id, user.sessionVer);
+  redirect(user.role === 'ADMIN' ? '/admin' : '/app');
 }
 
 export async function loginAction(_: ActionState, fd: FormData): Promise<ActionState> {
