@@ -8,7 +8,7 @@ import { Reveal, Stagger, StaggerItem, TitleReveal } from '@/components/ui/Motio
 
 export const metadata: Metadata = {
   title: 'Поддержать проект',
-  description: 'Как помочь проекту «Связь поколений»: пожертвование, площадка, IT и профессиональное участие, информационная поддержка, принятие проекта оператором.',
+  description: 'Как помочь проекту «Голос рода»: пожертвование, площадка, IT и профессиональное участие, информационная поддержка, принятие проекта оператором.',
 };
 
 const WAYS = [
@@ -32,7 +32,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
           <Reveal><p className="eyebrow">Ваша помощь станет частью истории</p></Reveal>
           <h1 className="h-display mt-5 max-w-4xl text-[clamp(2.8rem,7vw,6rem)]">
             <TitleReveal delay={0.1}>Поддержать</TitleReveal>
-            <TitleReveal delay={0.22} className="text-gold-400">«Связь поколений»</TitleReveal>
+            <TitleReveal delay={0.22} className="text-gold-400">«Голос рода»</TitleReveal>
           </h1>
           <Reveal delay={0.2}>
             <p className="mt-6 max-w-2xl text-lg text-cream-100/70">

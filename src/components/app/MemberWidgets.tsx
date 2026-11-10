@@ -15,7 +15,7 @@ export function InviteLink({ token, familyName }: { token: string; familyName: s
   };
   const share = async () => {
     if (navigator.share) {
-      await navigator.share({ title: 'Связь поколений', text: `Приглашаю в наше семейное пространство «${familyName}»`, url }).catch(() => null);
+      await navigator.share({ title: 'Голос рода', text: `Приглашаю в наше семейное пространство «${familyName}»`, url }).catch(() => null);
     } else copy();
   };
   return (

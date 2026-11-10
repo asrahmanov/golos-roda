@@ -71,7 +71,7 @@ export function SiteFooter({ settings }: { settings: Settings }) {
       </div>
       <div className="border-t border-white/6">
         <div className="container-x flex flex-col gap-3 py-6 text-xs text-cream-100/45 sm:flex-row sm:items-center sm:justify-between">
-          <span>© 2026 «Связь поколений» · Команда «Легенда»</span>
+          <span>© 2026 «Голос рода» · Команда «Легенда»</span>
           <div className="flex gap-5">
             <Link href="/privacy" className="hover:text-cream-50">Политика конфиденциальности</Link>
             <Link href="/terms" className="hover:text-cream-50">Условия использования</Link>

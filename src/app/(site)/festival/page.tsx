@@ -11,7 +11,7 @@ import { MaskReveal, Reveal, Stagger, StaggerItem, TitleReveal } from '@/compone
 
 export const metadata: Metadata = {
   title: 'Семейный фестиваль 22 ноября',
-  description: 'Семейный фестиваль «Связь поколений» в Москве: создайте семейное дерево, оцифруйте фото, запишите воспоминания. Регистрация семей.',
+  description: 'Семейный фестиваль «Голос рода» в Москве: создайте семейное дерево, оцифруйте фото, запишите воспоминания. Регистрация семей.',
 };
 
 const ZONE_ICON: Record<string, BrandIconName> = { tree: 'tree', mic: 'mic', archive: 'archive', search: 'roots', book: 'book' };
@@ -30,7 +30,7 @@ export default async function FestivalPage() {
           <Reveal><p className="eyebrow">Публичный старт проекта</p></Reveal>
           <h1 className="h-display mt-5 max-w-4xl text-[clamp(2.8rem,7vw,6rem)]">
             <TitleReveal delay={0.1}>Семейный фестиваль</TitleReveal>
-            <TitleReveal delay={0.22} className="text-gold-400">«Связь поколений»</TitleReveal>
+            <TitleReveal delay={0.22} className="text-gold-400">«Голос рода»</TitleReveal>
           </h1>
           <Reveal delay={0.2} className="mt-8 flex flex-wrap gap-3 text-sm">
             <span className="chip bg-white/10 px-4 py-2"><BrandIcon name="calendar" draw={false} accent="#e3b77e" className="h-5 w-5" /> {s.festivalDateText}</span>

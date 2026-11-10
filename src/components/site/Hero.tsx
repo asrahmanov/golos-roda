@@ -140,7 +140,7 @@ export function Hero({
         >
           <div className="relative aspect-[4/3.4] overflow-hidden rounded-[2rem] shadow-[0_40px_120px_-30px_rgba(0,0,0,0.8)] ring-1 ring-white/10 sm:aspect-[4/3.6] lg:aspect-[4/4.6]">
             <motion.div style={{ y: imgY, scale: imgScale }} className="absolute inset-[-8%]">
-              <Image src="/img/sculpture.jpg" alt="Эскиз скульптуры «Связь поколений»: руки старшего и младшего поколений внутри знака бесконечности" fill priority className="object-cover" sizes="(min-width:1024px) 50vw, 100vw" />
+              <Image src="/img/sculpture.jpg" alt="Эскиз скульптуры «Голос рода»: руки старшего и младшего поколений внутри знака бесконечности" fill priority className="object-cover" sizes="(min-width:1024px) 50vw, 100vw" />
             </motion.div>
             <div className="absolute inset-0 bg-gradient-to-t from-ink-950/70 via-transparent to-transparent" />
             <div className="absolute inset-x-5 bottom-5 flex items-end justify-between gap-4 sm:inset-x-7 sm:bottom-7">

@@ -108,7 +108,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <Marquee dark words={['Память', 'Голос', 'Семья', 'Корни', 'Наследие', 'Связь']} />
+      <Marquee dark words={['Память', 'Голос', 'Семья', 'Корни', 'Наследие', 'Род']} />
 
       {/* Платформа */}
       <section id="platform" className="py-24 sm:py-32">

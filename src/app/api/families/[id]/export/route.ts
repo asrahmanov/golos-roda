@@ -86,7 +86,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
   }
   void archive.finalize();
 
-  const name = `svyaz-pokoleny-${slugify(family.name) || 'family'}-${new Date().toISOString().slice(0, 10)}.zip`;
+  const name = `golos-roda-${slugify(family.name) || 'family'}-${new Date().toISOString().slice(0, 10)}.zip`;
   return new Response(Readable.toWeb(pass) as ReadableStream, {
     headers: {
       'Content-Type': 'application/zip',

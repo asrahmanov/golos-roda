@@ -6,7 +6,7 @@ import { Reveal, Stagger, StaggerItem } from '@/components/ui/Motion';
 
 export const metadata: Metadata = {
   title: 'Истории, которые нас объединяют',
-  description: 'Семейные истории участников проекта «Связь поколений», опубликованные с согласия авторов.',
+  description: 'Семейные истории участников проекта «Голос рода», опубликованные с согласия авторов.',
 };
 
 export default async function StoriesPage() {
