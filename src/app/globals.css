@@ -1,0 +1,113 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Playfair Display Variable', Georgia, serif;
+
+  --color-ink-950: #14110f;
+  --color-ink-900: #1d1916;
+  --color-ink-800: #2a2521;
+  --color-ink-700: #3a332d;
+  --color-ink-600: #4d443c;
+  --color-ink-500: #6b6058;
+  --color-ink-400: #8f847a;
+  --color-ink-300: #b4aa9f;
+
+  --color-cream-50: #fdfaf5;
+  --color-cream-100: #f8f2e8;
+  --color-cream-200: #f0e6d6;
+  --color-cream-300: #e4d5bd;
+
+  --color-gold-300: #e7c497;
+  --color-gold-400: #d9a86c;
+  --color-gold-500: #c58d4f;
+  --color-gold-600: #a8733a;
+  --color-gold-700: #85592b;
+
+  --color-sage-500: #7d8b6a;
+  --color-rose-500: #b8695a;
+
+  --animate-float: float 7s ease-in-out infinite;
+  --animate-shimmer: shimmer 3s linear infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to { background-position: 200% 0; }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    @apply bg-cream-50 text-ink-900 antialiased;
+    font-feature-settings: 'ss01';
+  }
+  ::selection {
+    @apply bg-gold-400/40;
+  }
+  input, textarea, select, button {
+    font: inherit;
+  }
+}
+
+@layer components {
+  .container-x {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8;
+  }
+  .eyebrow {
+    @apply text-[11px] font-bold uppercase tracking-[0.28em] text-gold-500;
+  }
+  .h-display {
+    @apply font-serif font-semibold leading-[1.02] tracking-tight;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98];
+  }
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98] bg-gold-500 text-ink-950 shadow-[0_10px_30px_-10px_rgba(197,141,79,0.7)] hover:bg-gold-400 hover:shadow-[0_14px_40px_-10px_rgba(197,141,79,0.9)];
+  }
+  .btn-dark {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98] bg-ink-900 text-cream-50 hover:bg-ink-700;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98] border border-current/20 hover:border-current/50 hover:bg-current/5;
+  }
+  .card {
+    @apply rounded-3xl border border-ink-900/8 bg-white shadow-[0_1px_2px_rgba(20,17,15,0.04),0_12px_40px_-24px_rgba(20,17,15,0.25)];
+  }
+  .input {
+    @apply w-full rounded-2xl border border-ink-900/12 bg-white px-4 py-3 text-[15px] text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-gold-500 focus:ring-4 focus:ring-gold-400/20;
+  }
+  .input-dark {
+    @apply w-full rounded-2xl border border-white/12 bg-white/5 px-4 py-3 text-[15px] text-cream-50 outline-none transition placeholder:text-cream-50/40 focus:border-gold-400 focus:ring-4 focus:ring-gold-400/15;
+  }
+  .label {
+    @apply mb-1.5 block text-[13px] font-semibold text-ink-600;
+  }
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold;
+  }
+  .grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+  }
+  .prose-story p {
+    @apply mb-4 leading-relaxed;
+  }
+}
+
+@layer utilities {
+  .btn-sm {
+    @apply px-4 py-2 text-xs;
+  }
+}
+
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { scrollbar-width: none; }

@@ -1,0 +1,422 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum MemberRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  UNKNOWN
+}
+
+enum RelationType {
+  PARENT
+  SPOUSE
+}
+
+enum MaterialType {
+  PHOTO
+  DOCUMENT
+  MEMORY
+  AUDIO
+  VIDEO
+  LINK
+}
+
+enum Visibility {
+  FAMILY
+  EDITORS
+  PRIVATE
+}
+
+enum StoryStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RegistrationStatus {
+  NEW
+  CONFIRMED
+  ATTENDED
+  CANCELLED
+}
+
+enum RequestKind {
+  DONATION
+  SPONSOR
+  VENUE
+  PROFESSIONAL
+  VOLUNTEER
+  OPERATOR
+  MEDIA
+  CONTACT
+}
+
+enum RequestStatus {
+  NEW
+  IN_PROGRESS
+  DONE
+  ARCHIVED
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  phone        String?
+  role         UserRole  @default(USER)
+  isBlocked    Boolean   @default(false)
+  sessionVer   Int       @default(0)
+  createdAt    DateTime  @default(now())
+  lastSeenAt   DateTime?
+
+  memberships    Membership[]
+  materials      Material[]     @relation("MaterialAuthor")
+  comments       Comment[]
+  activities     Activity[]
+  stories        PublicStory[]
+  tickets        SupportTicket[]
+  completions    TaskCompletion[]
+  invitesCreated Invite[]
+  files          StoredFile[]
+}
+
+model Family {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members     Membership[]
+  invites     Invite[]
+  persons     Person[]
+  relations   Relation[]
+  materials   Material[]
+  activities  Activity[]
+  completions TaskCompletion[]
+  stories     PublicStory[]
+  files       StoredFile[]
+}
+
+model Membership {
+  id        String     @id @default(cuid())
+  familyId  String
+  userId    String
+  role      MemberRole @default(VIEWER)
+  personId  String?
+  createdAt DateTime   @default(now())
+
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([familyId, userId])
+}
+
+model Invite {
+  id          String     @id @default(cuid())
+  familyId    String
+  token       String     @unique
+  role        MemberRole @default(VIEWER)
+  note        String?
+  createdById String
+  expiresAt   DateTime
+  maxUses     Int        @default(10)
+  usedCount   Int        @default(0)
+  revoked     Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+
+  family    Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  createdBy User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
+}
+
+model Person {
+  id          String   @id @default(cuid())
+  familyId    String
+  firstName   String
+  lastName    String?
+  middleName  String?
+  maidenName  String?
+  gender      Gender   @default(UNKNOWN)
+  birthDate   String?
+  deathDate   String?
+  isLiving    Boolean  @default(true)
+  birthPlace  String?
+  livedPlaces String?
+  occupation  String?
+  bio         String?
+  avatarId    String?
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  family    Family           @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  avatar    StoredFile?      @relation("PersonAvatar", fields: [avatarId], references: [id], onDelete: SetNull)
+  relFrom   Relation[]       @relation("RelFrom")
+  relTo     Relation[]       @relation("RelTo")
+  materials MaterialPerson[]
+}
+
+model Relation {
+  id        String       @id @default(cuid())
+  familyId  String
+  type      RelationType
+  fromId    String
+  toId      String
+  createdAt DateTime     @default(now())
+
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  from   Person @relation("RelFrom", fields: [fromId], references: [id], onDelete: Cascade)
+  to     Person @relation("RelTo", fields: [toId], references: [id], onDelete: Cascade)
+
+  @@unique([type, fromId, toId])
+}
+
+model StoredFile {
+  id           String   @id @default(cuid())
+  path         String
+  thumbPath    String?
+  originalName String
+  mime         String
+  size         Int
+  width        Int?
+  height       Int?
+  isPublic     Boolean  @default(false)
+  familyId     String?
+  uploadedById String?
+  createdAt    DateTime @default(now())
+
+  family     Family?       @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  uploadedBy User?         @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  avatarOf   Person[]      @relation("PersonAvatar")
+  materials  Material[]
+  stories    PublicStory[]
+  news       News[]
+  partners   Partner[]
+}
+
+model Material {
+  id           String       @id @default(cuid())
+  familyId     String
+  type         MaterialType
+  title        String
+  body         String?
+  dateText     String?
+  place        String?
+  fileId       String?
+  externalUrl  String?
+  visibility   Visibility   @default(FAMILY)
+  authorId     String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  family      Family           @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  file        StoredFile?      @relation(fields: [fileId], references: [id], onDelete: SetNull)
+  author      User?            @relation("MaterialAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+  persons     MaterialPerson[]
+  comments    Comment[]
+  completions TaskCompletion[]
+  stories     PublicStory[]
+
+  @@index([familyId, createdAt])
+}
+
+model MaterialPerson {
+  materialId String
+  personId   String
+
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  person   Person   @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@id([materialId, personId])
+}
+
+model Comment {
+  id         String   @id @default(cuid())
+  materialId String
+  authorId   String
+  text       String
+  createdAt  DateTime @default(now())
+
+  material Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  author   User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model Activity {
+  id        String   @id @default(cuid())
+  familyId  String
+  userId    String?
+  action    String
+  text      String
+  link      String?
+  createdAt DateTime @default(now())
+
+  family Family @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user   User?  @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([familyId, createdAt])
+  @@index([createdAt])
+}
+
+model Task {
+  id          String        @id @default(cuid())
+  title       String
+  description String
+  hint        MaterialType?
+  icon        String        @default("sparkles")
+  startsAt    DateTime      @default(now())
+  endsAt      DateTime?
+  isPublished Boolean       @default(true)
+  order       Int           @default(0)
+  createdAt   DateTime      @default(now())
+
+  completions TaskCompletion[]
+}
+
+model TaskCompletion {
+  id         String   @id @default(cuid())
+  taskId     String
+  familyId   String
+  userId     String?
+  materialId String?
+  note       String?
+  createdAt  DateTime @default(now())
+
+  task     Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  family   Family    @relation(fields: [familyId], references: [id], onDelete: Cascade)
+  user     User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  material Material? @relation(fields: [materialId], references: [id], onDelete: SetNull)
+
+  @@unique([taskId, familyId])
+}
+
+model PublicStory {
+  id          String      @id @default(cuid())
+  familyId    String?
+  userId      String?
+  materialId  String?
+  imageId     String?
+  title       String
+  text        String
+  authorName  String
+  consent     Boolean     @default(false)
+  status      StoryStatus @default(PENDING)
+  adminNote   String?
+  createdAt   DateTime    @default(now())
+  publishedAt DateTime?
+
+  family   Family?     @relation(fields: [familyId], references: [id], onDelete: SetNull)
+  user     User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  material Material?   @relation(fields: [materialId], references: [id], onDelete: SetNull)
+  image    StoredFile? @relation(fields: [imageId], references: [id], onDelete: SetNull)
+}
+
+model FestivalRegistration {
+  id         String             @id @default(cuid())
+  name       String
+  phone      String
+  email      String?
+  familyName String?
+  adults     Int                @default(1)
+  children   Int                @default(0)
+  seniors    Int                @default(0)
+  zones      String[]
+  comment    String?
+  consent    Boolean            @default(false)
+  status     RegistrationStatus @default(NEW)
+  adminNote  String?
+  createdAt  DateTime           @default(now())
+}
+
+model PartnerRequest {
+  id           String        @id @default(cuid())
+  kind         RequestKind   @default(CONTACT)
+  name         String
+  organization String?
+  email        String?
+  phone        String?
+  message      String
+  status       RequestStatus @default(NEW)
+  adminNote    String?
+  createdAt    DateTime      @default(now())
+}
+
+model SupportTicket {
+  id        String        @id @default(cuid())
+  userId    String?
+  subject   String
+  message   String
+  reply     String?
+  status    RequestStatus @default(NEW)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+model News {
+  id          String      @id @default(cuid())
+  slug        String      @unique
+  title       String
+  excerpt     String?
+  body        String
+  coverId     String?
+  published   Boolean     @default(false)
+  publishedAt DateTime    @default(now())
+  createdAt   DateTime    @default(now())
+
+  cover StoredFile? @relation(fields: [coverId], references: [id], onDelete: SetNull)
+}
+
+model FaqItem {
+  id        String  @id @default(cuid())
+  question  String
+  answer    String
+  order     Int     @default(0)
+  published Boolean @default(true)
+}
+
+model ProgramItem {
+  id          String  @id @default(cuid())
+  time        String
+  title       String
+  description String?
+  zone        String?
+  order       Int     @default(0)
+}
+
+model Partner {
+  id        String      @id @default(cuid())
+  name      String
+  url       String?
+  kind      String?
+  logoId    String?
+  order     Int         @default(0)
+  published Boolean     @default(true)
+
+  logo StoredFile? @relation(fields: [logoId], references: [id], onDelete: SetNull)
+}
+
+model Setting {
+  key   String @id
+  value String
+}

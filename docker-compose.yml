@@ -1,0 +1,15 @@
+# Локальная разработка: только база. Боевой стек — docker-compose.prod.yml.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: svyaz
+      POSTGRES_PASSWORD: svyaz
+      POSTGRES_DB: svyaz
+    ports:
+      - '55440:5432'
+    volumes:
+      - svyaz_pg_dev:/var/lib/postgresql/data
+
+volumes:
+  svyaz_pg_dev:
