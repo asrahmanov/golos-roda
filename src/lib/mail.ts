@@ -1,4 +1,5 @@
 import 'server-only';
+import { domainToUnicode } from 'node:url';
 import nodemailer from 'nodemailer';
 
 let transport: nodemailer.Transporter | null = null;
@@ -18,6 +19,10 @@ export function siteUrl(path = '') {
   return (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3010').replace(/\/$/, '') + path;
 }
 
+function siteHost() {
+  return domainToUnicode(new URL(siteUrl('/')).hostname);
+}
+
 function esc(s: string) {
   return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]!);
 }
@@ -34,7 +39,7 @@ function layout({ title, intro, button, url, outro }: { title: string; intro: st
 <p style="margin:28px 0 0;font-size:13px;line-height:1.6;color:#8a8076">${outro}</p>
 <p style="margin:16px 0 0;font-size:12px;line-height:1.5;color:#a59b90;word-break:break-all">Если кнопка не работает, откройте ссылку:<br><a href="${url}" style="color:#a8733c">${url}</a></p>
 </td></tr>
-<tr><td style="padding:20px 36px;border-top:1px solid #eee5d8;font-size:12px;color:#a59b90">Общественный проект «Голос рода» · <a href="${siteUrl('/')}" style="color:#a8733c">svyaz-pokoleny.ru</a></td></tr>
+<tr><td style="padding:20px 36px;border-top:1px solid #eee5d8;font-size:12px;color:#a59b90">Общественный проект «Голос рода» · <a href="${siteUrl('/')}" style="color:#a8733c">${siteHost()}</a></td></tr>
 </table></td></tr></table></body></html>`;
 }
 
@@ -56,7 +61,7 @@ export async function sendVerifyEmail(to: string, name: string, url: string) {
       intro: 'Осталось подтвердить адрес электронной почты — и можно начинать семейное дерево и архив.',
       button: 'Подтвердить почту',
       url,
-      outro: 'Ссылка действует 48 часов. Если вы не регистрировались на сайте svyaz-pokoleny.ru, просто проигнорируйте письмо.',
+      outro: `Ссылка действует 48 часов. Если вы не регистрировались на сайте ${siteHost()}, просто проигнорируйте письмо.`,
     }),
     `Здравствуйте, ${name}!\n\nПодтвердите почту, чтобы начать работу на платформе «Голос рода»:\n${url}\n\nСсылка действует 48 часов.`,
   );
