@@ -28,18 +28,18 @@ function esc(s: string) {
 }
 
 function layout({ title, intro, button, url, outro }: { title: string; intro: string; button: string; url: string; outro: string }) {
-  return `<!doctype html><html lang="ru"><body style="margin:0;background:#f6efe4;font-family:Arial,Helvetica,sans-serif;color:#1d1915">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f6efe4;padding:32px 12px"><tr><td align="center">
+  return `<!doctype html><html lang="ru"><body style="margin:0;background:#f3efe4;font-family:Arial,Helvetica,sans-serif;color:#11211a">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f3efe4;padding:32px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:24px;overflow:hidden">
-<tr><td style="background:#1d1915;padding:28px 36px;color:#d9a86c;font-family:Georgia,serif;font-size:22px">∞&nbsp; Голос рода</td></tr>
+<tr><td style="background:#11211a;padding:28px 36px;color:#d5b877;font-family:Georgia,serif;font-size:22px">∞&nbsp; Голос рода</td></tr>
 <tr><td style="padding:36px">
-<h1 style="margin:0 0 16px;font-family:Georgia,serif;font-size:26px;font-weight:normal;color:#1d1915">${esc(title)}</h1>
-<p style="margin:0 0 28px;font-size:16px;line-height:1.6;color:#4a423a">${intro}</p>
-<a href="${url}" style="display:inline-block;background:#c58d4f;color:#1d1915;text-decoration:none;font-weight:bold;font-size:15px;padding:14px 28px;border-radius:999px">${esc(button)}</a>
-<p style="margin:28px 0 0;font-size:13px;line-height:1.6;color:#8a8076">${outro}</p>
-<p style="margin:16px 0 0;font-size:12px;line-height:1.5;color:#a59b90;word-break:break-all">Если кнопка не работает, откройте ссылку:<br><a href="${url}" style="color:#a8733c">${url}</a></p>
+<h1 style="margin:0 0 16px;font-family:Georgia,serif;font-size:26px;font-weight:normal;color:#11211a">${esc(title)}</h1>
+<p style="margin:0 0 28px;font-size:16px;line-height:1.6;color:#375045">${intro}</p>
+<a href="${url}" style="display:inline-block;background:#c2a057;color:#11211a;text-decoration:none;font-weight:bold;font-size:15px;padding:14px 28px;border-radius:999px">${esc(button)}</a>
+<p style="margin:28px 0 0;font-size:13px;line-height:1.6;color:#6f8178">${outro}</p>
+<p style="margin:16px 0 0;font-size:12px;line-height:1.5;color:#8e9c94;word-break:break-all">Если кнопка не работает, откройте ссылку:<br><a href="${url}" style="color:#a08340">${url}</a></p>
 </td></tr>
-<tr><td style="padding:20px 36px;border-top:1px solid #eee5d8;font-size:12px;color:#a59b90">Общественный проект «Голос рода» · <a href="${siteUrl('/')}" style="color:#a8733c">${siteHost()}</a></td></tr>
+<tr><td style="padding:20px 36px;border-top:1px solid #e7e3d6;font-size:12px;color:#8e9c94">Общественный проект «Голос рода» · <a href="${siteUrl('/')}" style="color:#a08340">${siteHost()}</a></td></tr>
 </table></td></tr></table></body></html>`;
 }
 

@@ -8,16 +8,16 @@ import { Reveal, Stagger, StaggerItem, TitleReveal } from '@/components/ui/Motio
 
 export const metadata: Metadata = {
   title: 'Поддержать проект',
-  description: 'Как помочь проекту «Голос рода»: пожертвование, площадка, IT и профессиональное участие, информационная поддержка, принятие проекта оператором.',
+  description: 'Как помочь проекту «Голос рода»: пожертвование, площадка, IT и профессиональное участие, информационная поддержка, принятие проекта оператором.',
 };
 
 const WAYS = [
-  { I: 'donate' as const, t: 'Спонсору и донору', d: 'Денежный вклад в согласованную часть проекта или целевой сбор.', a: 'Сумма, цель, отчётность, условия упоминания' },
-  { I: 'venue' as const, t: 'Владельцу площадки', d: 'Помещения, интернет, техника, доступ к уличной зоне.', a: 'Дата, площадь, вместимость, безопасность' },
-  { I: 'code' as const, t: 'IT-партнёру', d: 'Разработка, инфраструктура, хранение и техническая поддержка.', a: 'Сроки, права, эксплуатационные расходы' },
-  { I: 'expert' as const, t: 'Эксперту', d: 'Генеалогические консультации, оцифровка, фото- и видеозапись.', a: 'Состав услуги, оборудование, персонал' },
-  { I: 'voice' as const, t: 'СМИ и сообществам', d: 'Информационная поддержка, аудитория, анонсы фестиваля.', a: 'Форматы и сроки публикаций' },
-  { I: 'operator' as const, t: 'Будущему оператору', d: 'Приём и долгосрочное сопровождение платформы и социальной программы.', a: 'Ответственность, данные, расходы, график' },
+  { I: 'donate' as const, t: 'Спонсору и донору', d: 'Денежный вклад в согласованную часть проекта или целевой сбор.', a: 'Сумма, цель, отчётность, условия упоминания' },
+  { I: 'venue' as const, t: 'Владельцу площадки', d: 'Помещения, интернет, техника, доступ к уличной зоне.', a: 'Дата, площадь, вместимость, безопасность' },
+  { I: 'code' as const, t: 'IT-партнёру', d: 'Разработка, инфраструктура, хранение и техническая поддержка.', a: 'Сроки, права, эксплуатационные расходы' },
+  { I: 'expert' as const, t: 'Эксперту', d: 'Генеалогические консультации, оцифровка, фото- и видеозапись.', a: 'Состав услуги, оборудование, персонал' },
+  { I: 'voice' as const, t: 'СМИ и сообществам', d: 'Информационная поддержка, аудитория, анонсы фестиваля.', a: 'Форматы и сроки публикаций' },
+  { I: 'operator' as const, t: 'Будущему оператору', d: 'Приём и долгосрочное сопровождение платформы и социальной программы.', a: 'Ответственность, данные, расходы, график' },
 ];
 
 export default async function SupportPage({ searchParams }: { searchParams: Promise<{ kind?: string }> }) {
@@ -36,7 +36,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
           </h1>
           <Reveal delay={0.2}>
             <p className="mt-6 max-w-2xl text-lg text-cream-100/70">
-              Поддержка позволит запустить конкретные измеримые элементы: рабочее семейное дерево, фестивальные станции, оцифровку материалов и дальнейшую доступность проекта.
+              Поддержка позволит запустить конкретные измеримые элементы: рабочее семейное дерево, фестивальные станции, оцифровку материалов и дальнейшую доступность проекта.
             </p>
           </Reveal>
         </div>
@@ -44,7 +44,7 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
 
       <section className="py-24">
         <div className="container-x">
-          <SectionHead eyebrow="Форматы участия" title="Партнёрство — не только деньги" />
+          <SectionHead eyebrow="Форматы участия" title="Партнёрство — не только деньги" />
           <Stagger className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {WAYS.map((w) => (
               <StaggerItem key={w.t} className="card spotlight group p-8 transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl">
@@ -66,23 +66,23 @@ export default async function SupportPage({ searchParams }: { searchParams: Prom
             <SectionHead eyebrow="Прозрачность" title="Пожертвования" lead={s.donationText} />
             <Reveal delay={0.2} className="mt-8 space-y-6">
               {s.donationUrl && (
-                <a href={s.donationUrl} target="_blank" rel="noreferrer" className="btn-gold px-8 py-4">Перейти к пожертвованию</a>
+                <a href={s.donationUrl} target="_blank" rel="noreferrer" className="btn-gold px-8 py-4">Перейти к пожертвованию</a>
               )}
               {qr && (
                 <div className="inline-block rounded-3xl bg-white p-4 shadow-lg">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={qr} alt="QR-код для пожертвования" className="h-48 w-48 object-contain" />
+                  <img src={qr} alt="QR-код для пожертвования" className="h-48 w-48 object-contain" />
                 </div>
               )}
               <div className="rounded-3xl bg-white/70 p-6 text-sm leading-relaxed text-ink-600">
-                Мы публикуем цель сбора, категории расходования и отчёт об использовании средств. Безвозмездные услуги партнёров раскрываются отдельно, чтобы денежные потребности и реальная стоимость поддержки не смешивались.
+                Мы публикуем цель сбора, категории расходования и отчёт об использовании средств. Безвозмездные услуги партнёров раскрываются отдельно, чтобы денежные потребности и реальная стоимость поддержки не смешивались.
                 <p className="mt-3 font-semibold text-ink-800">{s.budgetText}</p>
               </div>
             </Reveal>
           </div>
           <Reveal className="card p-6 sm:p-10">
             <h2 className="font-serif text-3xl font-semibold">Оставить заявку</h2>
-            <p className="mt-2 text-ink-500">Расскажите, чем готовы помочь — команда свяжется с вами и подготовит целевой запрос.</p>
+            <p className="mt-2 text-ink-500">Расскажите, чем готовы помочь — команда свяжется с вами и подготовит целевой запрос.</p>
             <div className="mt-8"><PartnerForm defaultKind={sp.kind} /></div>
           </Reveal>
         </div>

@@ -6,8 +6,8 @@ import { BrandIcon, type BrandIconName } from '@/components/ui/BrandIcon';
 type N = { id: string; x: number; y: number; name: string; years: string; tone: 'gold' | 'ink' | 'cream' };
 
 const NODES: N[] = [
-  { id: 'a', x: 29, y: 13, name: 'Анна', years: '1928 — 2011', tone: 'cream' },
-  { id: 'b', x: 71, y: 13, name: 'Пётр', years: '1925 — 1998', tone: 'cream' },
+  { id: 'a', x: 29, y: 13, name: 'Анна', years: '1928 — 2011', tone: 'cream' },
+  { id: 'b', x: 71, y: 13, name: 'Пётр', years: '1925 — 1998', tone: 'cream' },
   { id: 'c', x: 29, y: 48, name: 'Мария', years: 'род. 1956', tone: 'gold' },
   { id: 'd', x: 71, y: 48, name: 'Сергей', years: 'род. 1954', tone: 'ink' },
   { id: 'e', x: 29, y: 83, name: 'Ольга', years: 'род. 1984', tone: 'ink' },
@@ -40,7 +40,7 @@ export function TreeDemo() {
             <motion.path
               key={i}
               d={d}
-              stroke="#d9a86c"
+              stroke="#d5b877"
               strokeOpacity="0.6"
               strokeWidth="0.4"
               strokeLinecap="round"
@@ -87,7 +87,7 @@ export function TreeDemo() {
         >
           {(['camera', 'mic', 'letter'] as BrandIconName[]).map((n) => (
             <span key={n} className="grid h-9 w-9 place-items-center rounded-full bg-white/8 text-cream-50 ring-1 ring-white/10">
-              <BrandIcon name={n} draw={false} accent="#e3b77e" strokeWidth={2.2} className="h-5 w-5" />
+              <BrandIcon name={n} draw={false} accent="#dcc282" strokeWidth={2.2} className="h-5 w-5" />
             </span>
           ))}
         </motion.div>

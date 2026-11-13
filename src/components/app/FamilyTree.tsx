@@ -153,7 +153,7 @@ export function FamilyTree({
   });
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-[1.75rem] bg-[radial-gradient(circle_at_1px_1px,rgba(29,25,22,0.09)_1px,transparent_0)] [background-size:22px_22px] bg-cream-100 ring-1 ring-ink-900/8">
+    <div className="relative h-full w-full overflow-hidden rounded-[1.75rem] bg-[radial-gradient(circle_at_1px_1px,rgba(17,33,26,0.09)_1px,transparent_0)] [background-size:22px_22px] bg-cream-100 ring-1 ring-ink-900/8">
       <div
         ref={wrap}
         className="absolute inset-0 cursor-grab touch-none select-none active:cursor-grabbing"
@@ -172,7 +172,7 @@ export function FamilyTree({
                 key={i + e.d}
                 d={e.d}
                 fill="none"
-                stroke={e.kind === 'spouse' ? '#c58d4f' : '#8f847a'}
+                stroke={e.kind === 'spouse' ? '#c2a057' : '#7d8d84'}
                 strokeWidth={e.kind === 'spouse' ? 2.5 : 1.6}
                 strokeLinecap="round"
                 initial={{ pathLength: 0, opacity: 0 }}
@@ -189,7 +189,7 @@ export function FamilyTree({
                 key={n.id}
                 data-node={n.id}
                 className={cn(
-                  'absolute flex cursor-pointer items-center gap-3 rounded-2xl bg-white p-3 shadow-[0_8px_30px_-12px_rgba(20,17,15,0.35)] ring-1 transition-shadow hover:shadow-[0_16px_40px_-12px_rgba(20,17,15,0.45)]',
+                  'absolute flex cursor-pointer items-center gap-3 rounded-2xl bg-white p-3 shadow-[0_8px_30px_-12px_rgba(11,23,18,0.35)] ring-1 transition-shadow hover:shadow-[0_16px_40px_-12px_rgba(11,23,18,0.45)]',
                   selected === n.id ? 'ring-2 ring-gold-500' : me ? 'ring-2 ring-gold-400/70' : 'ring-ink-900/8',
                   !p.isLiving && 'bg-cream-50',
                 )}

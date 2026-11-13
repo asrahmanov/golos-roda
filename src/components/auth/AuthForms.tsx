@@ -37,7 +37,7 @@ export function LoginForm({ next }: { next?: string }) {
         <PasswordInput name="password" autoComplete="current-password" />
       </Field>
       <FormMessage state={state} />
-      <SubmitButton className="btn-dark mt-2 w-full py-4" pendingText="Входим…">Войти</SubmitButton>
+      <SubmitButton className="btn-gold mt-2 w-full py-4" pendingText="Входим…">Войти</SubmitButton>
       <p className="text-center text-sm text-ink-500">
         Нет аккаунта?{' '}
         <Link href={`/register${next ? `?next=${encodeURIComponent(next)}` : ''}`} className="font-semibold text-gold-700 hover:underline">
@@ -56,13 +56,13 @@ export function RegisterForm({ next }: { next?: string }) {
   return (
     <form action={action} className="grid gap-4">
       <input type="hidden" name="next" value={next ?? ''} />
-      <Field label="Как вас зовут">
-        <input name="name" required autoComplete="name" className="input" placeholder="Имя и фамилия" />
+      <Field label="Как вас зовут">
+        <input name="name" required autoComplete="name" className="input" placeholder="Имя и фамилия" />
       </Field>
       <Field label="Электронная почта">
         <input name="email" type="email" required autoComplete="email" className="input" />
       </Field>
-      <Field label="Пароль" hint="Не короче 8 символов">
+      <Field label="Пароль" hint="Не короче 8 символов">
         <PasswordInput name="password" autoComplete="new-password" />
       </Field>
       <label className="flex items-start gap-3 text-sm text-ink-600">
@@ -93,7 +93,7 @@ export function VerifyEmailForms({ email }: { email: string }) {
     <div className="grid gap-4">
       <form action={resend} className="grid gap-3">
         <FormMessage state={resendState} />
-        <SubmitButton className="btn-dark w-full py-4" pendingText="Отправляем…">Отправить письмо ещё раз</SubmitButton>
+        <SubmitButton className="btn-gold w-full py-4" pendingText="Отправляем…">Отправить письмо ещё раз</SubmitButton>
       </form>
       {editing ? (
         <form action={change} className="grid gap-3 rounded-3xl border border-ink-900/8 p-5">
@@ -101,11 +101,11 @@ export function VerifyEmailForms({ email }: { email: string }) {
             <input name="email" type="email" required defaultValue={email} autoComplete="email" className="input" />
           </Field>
           <FormMessage state={changeState} />
-          <SubmitButton className="btn-ghost w-full" pendingText="Отправляем…">Сохранить и отправить письмо</SubmitButton>
+          <SubmitButton className="btn-ghost w-full" pendingText="Отправляем…">Сохранить и отправить письмо</SubmitButton>
         </form>
       ) : (
         <button type="button" onClick={() => setEditing(true)} className="text-sm font-semibold text-gold-700 hover:underline">
-          Ошиблись в адресе? Изменить почту
+          Ошиблись в адресе? Изменить почту
         </button>
       )}
     </div>
@@ -120,7 +120,7 @@ export function ForgotForm() {
         <input name="email" type="email" required autoComplete="email" className="input" />
       </Field>
       <FormMessage state={state} />
-      <SubmitButton className="btn-dark mt-2 w-full py-4" pendingText="Отправляем…">Прислать ссылку</SubmitButton>
+      <SubmitButton className="btn-gold mt-2 w-full py-4" pendingText="Отправляем…">Прислать ссылку</SubmitButton>
       <p className="text-center text-sm text-ink-500">
         Вспомнили? <Link href="/login" className="font-semibold text-gold-700 hover:underline">Войти</Link>
       </p>
@@ -133,11 +133,11 @@ export function ResetForm({ token }: { token: string }) {
   return (
     <form action={action} className="grid gap-4">
       <input type="hidden" name="token" value={token} />
-      <Field label="Новый пароль" hint="Не короче 8 символов">
+      <Field label="Новый пароль" hint="Не короче 8 символов">
         <PasswordInput name="password" autoComplete="new-password" />
       </Field>
       <FormMessage state={state} />
-      <SubmitButton className="btn-dark mt-2 w-full py-4" pendingText="Сохраняем…">Сохранить и войти</SubmitButton>
+      <SubmitButton className="btn-gold mt-2 w-full py-4" pendingText="Сохраняем…">Сохранить и войти</SubmitButton>
     </form>
   );
 }

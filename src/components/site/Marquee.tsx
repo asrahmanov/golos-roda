@@ -13,7 +13,7 @@ export function Marquee({ words, dark = false, reverse = false, className }: { w
     <div className="flex shrink-0 items-center" aria-hidden>
       {words.map((w, i) => (
         <span key={i} className="flex items-center">
-          <span className={cn('font-serif text-[clamp(2.4rem,6vw,5.5rem)] font-semibold italic leading-none tracking-tight', i % 2 ? 'text-outline' : '')}>{w}</span>
+          <span className={cn('font-serif text-[clamp(2.4rem,6vw,5.5rem)] font-semibold leading-none tracking-tight', i % 2 ? 'text-outline' : '')}>{w}</span>
           <Knot />
         </span>
       ))}

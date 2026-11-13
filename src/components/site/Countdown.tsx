@@ -25,7 +25,7 @@ export function Countdown({ target, light = false }: { target: string; light?: b
 
   if (Number.isNaN(t)) return null;
   if (d?.done) {
-    return <p className={cn('font-serif text-xl italic', light ? 'text-ink-700' : 'text-gold-300')}>Фестиваль уже состоялся — спасибо всем семьям!</p>;
+    return <p className={cn('font-serif text-xl', light ? 'text-ink-700' : 'text-gold-300')}>Фестиваль уже состоялся — спасибо всем семьям!</p>;
   }
   const items = [
     { v: d?.days, l: 'дней' },
@@ -35,7 +35,7 @@ export function Countdown({ target, light = false }: { target: string; light?: b
   ];
   return (
     <div>
-      <p className={cn('mb-3 text-xs font-semibold uppercase tracking-[0.2em]', light ? 'text-ink-500' : 'text-cream-100/50')}>До фестиваля</p>
+      <p className={cn('mb-3 text-xs font-semibold uppercase tracking-[0.2em]', light ? 'text-ink-500' : 'text-cream-100/50')}>До фестиваля</p>
       <div className="flex gap-2 sm:gap-3">
         {items.map((i) => (
           <div

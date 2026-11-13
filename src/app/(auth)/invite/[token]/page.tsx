@@ -7,7 +7,7 @@ import { ROLE_HINT, ROLE_LABEL } from '@/lib/family';
 import { acceptInviteAction } from '@/actions/family';
 import { SubmitButton } from '@/components/ui/Form';
 
-export const metadata: Metadata = { title: 'Приглашение в семью', robots: { index: false } };
+export const metadata: Metadata = { title: 'Приглашение в семью', robots: { index: false } };
 
 export default async function InvitePage({ params, searchParams }: { params: Promise<{ token: string }>; searchParams: Promise<{ error?: string }> }) {
   const { token } = await params;
@@ -22,8 +22,8 @@ export default async function InvitePage({ params, searchParams }: { params: Pro
     return (
       <div>
         <h1 className="h-display text-4xl">Приглашение недействительно</h1>
-        <p className="mt-3 text-ink-500">Срок действия ссылки истёк или её отозвали. Попросите родственника прислать новую.</p>
-        <Link href="/" className="btn-dark mt-8">На главную</Link>
+        <p className="mt-3 text-ink-500">Срок действия ссылки истёк или её отозвали. Попросите родственника прислать новую.</p>
+        <Link href="/" className="btn-gold mt-8">На главную</Link>
       </div>
     );
   }
@@ -34,18 +34,18 @@ export default async function InvitePage({ params, searchParams }: { params: Pro
       <p className="eyebrow mt-8">Приглашение</p>
       <h1 className="h-display mt-3 text-4xl sm:text-5xl">{inv.family.name}</h1>
       <p className="mt-4 text-ink-600">
-        {inv.createdBy.name} приглашает вас в семейное пространство как <b>{ROLE_LABEL[inv.role].toLowerCase()}</b>. {ROLE_HINT[inv.role]}.
+        {inv.createdBy.name} приглашает вас в семейное пространство как <b>{ROLE_LABEL[inv.role].toLowerCase()}</b>. {ROLE_HINT[inv.role]}.
       </p>
       {user ? (
         <form action={acceptInviteAction} className="mt-10">
           <input type="hidden" name="token" value={token} />
-          <p className="mb-4 text-sm text-ink-500">Вы вошли как {user.name}</p>
-          <SubmitButton className="btn-gold w-full py-4" pendingText="Присоединяемся…">Присоединиться к семье</SubmitButton>
+          <p className="mb-4 text-sm text-ink-500">Вы вошли как {user.name}</p>
+          <SubmitButton className="btn-gold w-full py-4" pendingText="Присоединяемся…">Присоединиться к семье</SubmitButton>
         </form>
       ) : (
         <div className="mt-10 grid gap-3">
-          <Link href={`/register?next=${encodeURIComponent(next)}`} className="btn-gold py-4">Зарегистрироваться и присоединиться</Link>
-          <Link href={`/login?next=${encodeURIComponent(next)}`} className="btn-ghost py-4">У меня уже есть аккаунт</Link>
+          <Link href={`/register?next=${encodeURIComponent(next)}`} className="btn-gold py-4">Зарегистрироваться и присоединиться</Link>
+          <Link href={`/login?next=${encodeURIComponent(next)}`} className="btn-ghost py-4">У меня уже есть аккаунт</Link>
         </div>
       )}
     </div>

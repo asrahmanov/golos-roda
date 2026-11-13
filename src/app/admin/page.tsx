@@ -78,8 +78,8 @@ export default async function AdminDashboard() {
   const days: string[] = [];
   for (let i = 29; i >= 0; i--) days.push(dayKey(new Date(Date.now() - i * 86400000)));
   const series = [
-    { name: 'Регистрации пользователей', color: '#c58d4f', data: recentUsers },
-    { name: 'Новые семьи', color: '#1d1916', data: recentFamilies },
+    { name: 'Регистрации пользователей', color: '#c2a057', data: recentUsers },
+    { name: 'Новые семьи', color: '#11211a', data: recentFamilies },
     { name: 'Материалы', color: '#7d8b6a', data: recentMaterials },
     { name: 'Заявки на фестиваль', color: '#b8695a', data: recentRegs },
   ].map((sr) => {
@@ -123,7 +123,7 @@ export default async function AdminDashboard() {
           <h2 className="font-serif text-xl font-semibold">Активность за 30 дней</h2>
           <svg viewBox={`0 0 ${W} ${H + 24}`} className="mt-5 w-full">
             {[0.25, 0.5, 0.75, 1].map((f) => (
-              <line key={f} x1="0" x2={W} y1={H - H * f} y2={H - H * f} stroke="#1d1916" strokeOpacity="0.06" />
+              <line key={f} x1="0" x2={W} y1={H - H * f} y2={H - H * f} stroke="#11211a" strokeOpacity="0.06" />
             ))}
             {series.map((sr) => (
               <polyline
@@ -136,7 +136,7 @@ export default async function AdminDashboard() {
                 points={sr.values.map((v, i) => `${(i / 29) * W},${H - (v / max) * (H - 10)}`).join(' ')}
               />
             ))}
-            {days.map((d, i) => (i % 5 === 0 || i === 29 ? <text key={d} x={(i / 29) * W} y={H + 18} fontSize="10" fill="#8f847a" textAnchor={i === 0 ? 'start' : i === 29 ? 'end' : 'middle'}>{d}</text> : null))}
+            {days.map((d, i) => (i % 5 === 0 || i === 29 ? <text key={d} x={(i / 29) * W} y={H + 18} fontSize="10" fill="#7d8d84" textAnchor={i === 0 ? 'start' : i === 29 ? 'end' : 'middle'}>{d}</text> : null))}
           </svg>
           <div className="mt-4 flex flex-wrap gap-4 text-xs">
             {series.map((sr) => (

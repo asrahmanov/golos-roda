@@ -12,7 +12,7 @@ function ScrollThread() {
       className="pointer-events-none fixed inset-x-0 top-0 z-[60] h-[2px] origin-left bg-gradient-to-r from-gold-700 via-gold-400 to-gold-200"
       style={{ scaleX }}
     >
-      <span className="absolute -right-1 -top-[3px] h-2 w-2 rounded-full bg-gold-300 shadow-[0_0_12px_3px_rgba(227,183,126,0.8)]" />
+      <span className="absolute -right-1 -top-[3px] h-2 w-2 rounded-full bg-gold-300 shadow-[0_0_12px_3px_rgba(220,194,130,0.8)]" />
     </motion.div>
   );
 }

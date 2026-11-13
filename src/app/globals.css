@@ -1,28 +1,28 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-sans: 'Manrope Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
   --font-serif: 'Playfair Display Variable', Georgia, serif;
 
-  --color-ink-950: #14110f;
-  --color-ink-900: #1d1916;
-  --color-ink-800: #2a2521;
-  --color-ink-700: #3a332d;
-  --color-ink-600: #4d443c;
-  --color-ink-500: #6b6058;
-  --color-ink-400: #8f847a;
-  --color-ink-300: #b4aa9f;
+  --color-ink-950: #0b1712;
+  --color-ink-900: #11211a;
+  --color-ink-800: #192e24;
+  --color-ink-700: #243c31;
+  --color-ink-600: #375045;
+  --color-ink-500: #53675d;
+  --color-ink-400: #7d8d84;
+  --color-ink-300: #a8b4ad;
 
-  --color-cream-50: #fdfaf5;
-  --color-cream-100: #f8f2e8;
-  --color-cream-200: #f0e6d6;
-  --color-cream-300: #e4d5bd;
+  --color-cream-50: #fcfaf4;
+  --color-cream-100: #f6f2e7;
+  --color-cream-200: #ece6d6;
+  --color-cream-300: #ddd4bd;
 
-  --color-gold-300: #e7c497;
-  --color-gold-400: #d9a86c;
-  --color-gold-500: #c58d4f;
-  --color-gold-600: #a8733a;
-  --color-gold-700: #85592b;
+  --color-gold-300: #e6d4a4;
+  --color-gold-400: #d5b877;
+  --color-gold-500: #c2a057;
+  --color-gold-600: #a08340;
+  --color-gold-700: #7b642f;
 
   --color-sage-500: #7d8b6a;
   --color-rose-500: #b8695a;
@@ -48,7 +48,9 @@
   }
   body {
     @apply bg-cream-50 text-ink-900 antialiased;
-    font-feature-settings: 'ss01';
+  }
+  p, li {
+    text-wrap: pretty;
   }
   ::selection {
     @apply bg-gold-400/40;
@@ -66,13 +68,13 @@
     @apply text-[11px] font-bold uppercase tracking-[0.28em] text-gold-500;
   }
   .h-display {
-    @apply font-serif font-semibold leading-[1.02] tracking-tight;
+    @apply font-serif font-semibold leading-[1.1] tracking-tight;
   }
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98];
   }
   .btn-gold {
-    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98] bg-gold-500 text-ink-950 shadow-[0_10px_30px_-10px_rgba(197,141,79,0.7)] hover:bg-gold-400 hover:shadow-[0_14px_40px_-10px_rgba(197,141,79,0.9)];
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98] bg-gold-500 text-ink-950 shadow-[0_10px_30px_-10px_rgba(194,160,87,0.7)] hover:bg-gold-400 hover:shadow-[0_14px_40px_-10px_rgba(194,160,87,0.9)];
   }
   .btn-dark {
     @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98] bg-ink-900 text-cream-50 hover:bg-ink-700;
@@ -81,7 +83,7 @@
     @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98] border border-current/20 hover:border-current/50 hover:bg-current/5;
   }
   .card {
-    @apply rounded-3xl border border-ink-900/8 bg-white shadow-[0_1px_2px_rgba(20,17,15,0.04),0_12px_40px_-24px_rgba(20,17,15,0.25)];
+    @apply rounded-3xl border border-ink-900/8 bg-white shadow-[0_1px_2px_rgba(11,23,18,0.04),0_12px_40px_-24px_rgba(11,23,18,0.25)];
   }
   .input {
     @apply w-full rounded-2xl border border-ink-900/12 bg-white px-4 py-3 text-[15px] text-ink-900 outline-none transition placeholder:text-ink-400 focus:border-gold-500 focus:ring-4 focus:ring-gold-400/20;
@@ -123,7 +125,7 @@
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.5s;
-  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(217, 168, 108, 0.16), transparent 60%);
+  background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(213, 184, 119, 0.16), transparent 60%);
 }
 .spotlight::after {
   content: '';
@@ -134,7 +136,7 @@
   padding: 1px;
   opacity: 0;
   transition: opacity 0.5s;
-  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(217, 168, 108, 0.75), transparent 70%);
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(213, 184, 119, 0.75), transparent 70%);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -160,8 +162,8 @@
   width: 4px;
   height: 4px;
   border-radius: 9999px;
-  background: #e3b77e;
-  box-shadow: 0 0 10px 2px rgba(227, 183, 126, 0.6);
+  background: #dcc282;
+  box-shadow: 0 0 10px 2px rgba(220, 194, 130, 0.6);
   opacity: 0;
   animation: ember linear infinite;
 }

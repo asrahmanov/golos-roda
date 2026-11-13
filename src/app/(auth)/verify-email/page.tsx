@@ -22,9 +22,9 @@ export default async function VerifyEmailPage({ searchParams }: { searchParams: 
         <p className="mt-4 rounded-2xl bg-rose-500/10 px-4 py-3 text-sm text-rose-500">Ссылка устарела. Отправьте письмо ещё раз.</p>
       ) : null}
       <p className="mt-4 leading-relaxed text-ink-600">
-        Мы отправили письмо на <b className="text-ink-900">{user.email}</b>. Откройте его и нажмите «Подтвердить почту» — после этого откроется ваш кабинет.
+        Мы отправили письмо на <b className="text-ink-900">{user.email}</b>. Откройте его и нажмите «Подтвердить почту» — после этого откроется ваш кабинет.
       </p>
-      <p className="mt-3 text-sm text-ink-500">Письмо может прийти в течение пары минут. Если его нет — загляните в «Спам» или «Промоакции».</p>
+      <p className="mt-3 text-sm text-ink-500">Письмо может прийти в течение пары минут. Если его нет — загляните в «Спам» или «Промоакции».</p>
       <div className="mt-10">
         <VerifyEmailForms email={user.email} />
       </div>

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import '@fontsource-variable/manrope';
+import '@fontsource-variable/inter';
 import '@fontsource-variable/playfair-display';
 import './globals.css';
 
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#1d1916',
+  themeColor: '#11211a',
   width: 'device-width',
   initialScale: 1,
 };

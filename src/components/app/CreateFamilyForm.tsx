@@ -29,7 +29,7 @@ export function CreateFamilyForm({ defaultLastName }: { defaultLastName?: string
         </div>
       </div>
       <FormMessage state={state} />
-      <SubmitButton className="btn-gold py-4" pendingText="Создаём…">Создать семейное пространство</SubmitButton>
+      <SubmitButton className="btn-gold py-4" pendingText="Создаём…">Создать летопись</SubmitButton>
     </form>
   );
 }

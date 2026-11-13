@@ -31,7 +31,7 @@ export function MaterialCard({ m, familyId }: { m: MaterialCardData; familyId: s
         ) : m.type === 'MEMORY' ? (
           <div className="h-full bg-gradient-to-br from-cream-100 to-cream-200 p-5">
             <span className="font-serif text-5xl leading-none text-gold-400">“</span>
-            <p className="line-clamp-4 font-serif text-[15px] italic leading-relaxed text-ink-700">{m.body}</p>
+            <p className="line-clamp-4 text-[15px] leading-relaxed text-ink-700">{m.body}</p>
           </div>
         ) : (
           <div className={`grid h-full place-items-center ${m.type === 'AUDIO' ? 'bg-ink-900' : ''}`}>

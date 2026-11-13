@@ -11,7 +11,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
   return (
     <>
       <h1 className="h-display text-4xl sm:text-5xl">Начнём историю вашей семьи</h1>
-      <p className="mt-3 text-ink-500">Бесплатно. Семейное пространство закрыто — его видят только те, кого вы пригласите.</p>
+      <p className="mt-3 text-ink-500">Бесплатно. Семейное пространство закрыто — его видят только те, кого вы пригласите.</p>
       <div className="mt-10"><RegisterForm next={next} /></div>
     </>
   );

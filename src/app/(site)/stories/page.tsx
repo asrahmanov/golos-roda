@@ -6,7 +6,7 @@ import { Reveal, Stagger, StaggerItem } from '@/components/ui/Motion';
 
 export const metadata: Metadata = {
   title: 'Истории, которые нас объединяют',
-  description: 'Семейные истории участников проекта «Голос рода», опубликованные с согласия авторов.',
+  description: 'Семейные истории участников проекта «Голос рода», опубликованные с согласия авторов.',
 };
 
 export default async function StoriesPage() {
@@ -20,14 +20,14 @@ export default async function StoriesPage() {
         </Reveal>
         <Reveal delay={0.2}>
           <p className="mt-5 max-w-2xl text-lg text-ink-600">
-            Семьи-участники делятся воспоминаниями, чтобы вдохновить других на собственный поиск. Каждая история опубликована только с согласия автора.
+            Семьи-участники делятся воспоминаниями, чтобы вдохновить других на собственный поиск. Каждая история опубликована только с согласия автора.
           </p>
         </Reveal>
         {stories.length === 0 ? (
           <Reveal className="mt-16 rounded-3xl border border-dashed border-ink-900/15 p-12 text-center">
             <p className="font-serif text-2xl">Первые истории появятся совсем скоро</p>
-            <p className="mt-3 text-ink-500">Создайте семейное пространство и предложите свою историю для экспозиции.</p>
-            <Link href="/register" className="btn-gold mt-8">Начать</Link>
+            <p className="mt-3 text-ink-500">Создайте семейное пространство и предложите свою историю для экспозиции.</p>
+            <Link href="/register" className="btn-gold mt-8">Создать летопись</Link>
           </Reveal>
         ) : (
           <Stagger className="mt-16 columns-1 gap-6 sm:columns-2 lg:columns-3 [&>*]:mb-6">

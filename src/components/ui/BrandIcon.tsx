@@ -229,7 +229,7 @@ export type BrandIconName = keyof typeof ICONS;
 export function BrandIcon({
   name,
   className,
-  accent = 'var(--brand-accent, #c58d4f)',
+  accent = 'var(--brand-accent, #c2a057)',
   strokeWidth = 1.6,
   draw = true,
   delay = 0,

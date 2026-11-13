@@ -11,7 +11,7 @@ import { MaskReveal, Reveal, Stagger, StaggerItem, TitleReveal } from '@/compone
 
 export const metadata: Metadata = {
   title: 'Семейный фестиваль 22 ноября',
-  description: 'Семейный фестиваль «Голос рода» в Москве: создайте семейное дерево, оцифруйте фото, запишите воспоминания. Регистрация семей.',
+  description: 'Семейный фестиваль «Голос рода» в Москве: создайте семейное дерево, оцифруйте фото, запишите воспоминания. Регистрация семей.',
 };
 
 const ZONE_ICON: Record<string, BrandIconName> = { tree: 'tree', mic: 'mic', archive: 'archive', search: 'roots', book: 'book' };
@@ -33,9 +33,9 @@ export default async function FestivalPage() {
             <TitleReveal delay={0.22} className="text-gold-400">«Голос рода»</TitleReveal>
           </h1>
           <Reveal delay={0.2} className="mt-8 flex flex-wrap gap-3 text-sm">
-            <span className="chip bg-white/10 px-4 py-2"><BrandIcon name="calendar" draw={false} accent="#e3b77e" className="h-5 w-5" /> {s.festivalDateText}</span>
-            <span className="chip bg-white/10 px-4 py-2"><BrandIcon name="pin" draw={false} accent="#e3b77e" className="h-5 w-5" /> {s.festivalVenue}{s.festivalAddress ? `, ${s.festivalAddress}` : ''}</span>
-            <span className="chip bg-white/10 px-4 py-2"><BrandIcon name="family" draw={false} accent="#e3b77e" className="h-5 w-5" /> Вход свободный, для всей семьи</span>
+            <span className="chip bg-white/10 px-4 py-2"><BrandIcon name="calendar" draw={false} accent="#dcc282" className="h-5 w-5" /> {s.festivalDateText}</span>
+            <span className="chip bg-white/10 px-4 py-2"><BrandIcon name="pin" draw={false} accent="#dcc282" className="h-5 w-5" /> {s.festivalVenue}{s.festivalAddress ? `, ${s.festivalAddress}` : ''}</span>
+            <span className="chip bg-white/10 px-4 py-2"><BrandIcon name="family" draw={false} accent="#dcc282" className="h-5 w-5" /> Вход свободный, для всей семьи</span>
           </Reveal>
           <Reveal delay={0.3} className="mt-10"><Countdown target={s.festivalDate} /></Reveal>
         </div>
@@ -45,8 +45,8 @@ export default async function FestivalPage() {
         <div className="container-x">
           <SectionHead
             eyebrow="Замысел"
-            title="Не только сцена — практический шаг для каждой семьи"
-            lead="Внутренние пространства для консультаций и записи историй плюс уличная церемония открытия скульптуры. Каждый посетитель уходит с осязаемым результатом."
+            title="Не только сцена — практический шаг для каждой семьи"
+            lead="Внутренние пространства для консультаций и записи историй плюс уличная церемония открытия скульптуры. Каждый посетитель уходит с осязаемым результатом."
           />
           <Stagger className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             {FESTIVAL_ZONES.map((z) => {
@@ -61,10 +61,10 @@ export default async function FestivalPage() {
               );
             })}
             <StaggerItem className="spotlight group rounded-3xl bg-ink-900 p-8 text-cream-50">
-              <BrandIcon name="shield" accent="#e3b77e" className="h-14 w-14 text-cream-50" />
-              <h3 className="mt-6 font-serif text-2xl font-semibold">Бережно к материалам</h3>
+              <BrandIcon name="shield" accent="#dcc282" className="h-14 w-14 text-cream-50" />
+              <h3 className="mt-6 font-serif text-2xl font-semibold">Бережно к материалам</h3>
               <p className="mt-3 text-cream-100/70">
-                Оригиналы документов остаются у владельцев. Записи и фото публикуются только с разрешения. Волонтёры не получают доступ к семейным архивам.
+                Оригиналы документов остаются у владельцев. Записи и фото публикуются только с разрешения. Волонтёры не получают доступ к семейным архивам.
               </p>
             </StaggerItem>
           </Stagger>
@@ -74,14 +74,14 @@ export default async function FestivalPage() {
       {program.length > 0 && (
         <section className="bg-cream-100 py-24">
           <div className="container-x grid gap-12 lg:grid-cols-[1fr_1.6fr]">
-            <SectionHead eyebrow="Программа" title="Как пройдёт день" lead="Точное время и состав экспертов уточняются после подтверждения площадки." />
+            <SectionHead eyebrow="Программа" title="Как пройдёт день" lead="Точное время и состав экспертов уточняются после подтверждения площадки." />
             <ol className="relative space-y-4 border-l border-gold-400/40 pl-8">
               {program.map((p, i) => (
                 <Reveal as="li" key={p.id} delay={i * 0.05} className="relative">
                   <span className="absolute -left-[2.45rem] top-6 h-3 w-3 rounded-full bg-gold-500 ring-4 ring-cream-100" />
                   <div className="card p-6">
                     <div className="flex flex-wrap items-center gap-3">
-                      <span className="chip bg-ink-900 text-gold-300"><BrandIcon name="clock" draw={false} accent="#e3b77e" strokeWidth={2.4} className="h-4 w-4" /> {p.time}</span>
+                      <span className="chip bg-ink-900 text-gold-300"><BrandIcon name="clock" draw={false} accent="#dcc282" strokeWidth={2.4} className="h-4 w-4" /> {p.time}</span>
                       {p.zone && <span className="chip bg-gold-500/12 text-gold-700">{p.zone}</span>}
                     </div>
                     <h3 className="mt-3 text-lg font-bold">{p.title}</h3>
@@ -98,18 +98,18 @@ export default async function FestivalPage() {
         <div className="pointer-events-none absolute -left-20 top-0 h-[30rem] w-[30rem] rounded-full bg-gold-500/10 blur-[120px]" />
         <div className="container-x relative grid gap-14 lg:grid-cols-[1fr_1.2fr]">
           <div>
-            <SectionHead dark eyebrow="Регистрация" title="Приходите всей семьёй" lead="Предварительная регистрация поможет нам подготовить волонтёров и оборудование. Мы напомним о фестивале ближе к дате." />
+            <SectionHead dark eyebrow="Регистрация" title="Приходите всей семьёй" lead="Предварительная регистрация поможет нам подготовить волонтёров и оборудование. Мы напомним о фестивале ближе к дате." />
             <Reveal delay={0.2} className="mt-10 space-y-4 text-cream-100/70">
-              <p className="flex gap-3"><BrandIcon name="camera" draw={false} accent="#e3b77e" className="h-7 w-7 shrink-0 text-cream-50" /> Возьмите семейные фотографии и документы — оцифруем на месте.</p>
-              <p className="flex gap-3"><BrandIcon name="mic" draw={false} accent="#e3b77e" className="h-7 w-7 shrink-0 text-cream-50" /> Приводите старшее поколение — запишем их воспоминания.</p>
-              <p className="flex gap-3"><BrandIcon name="tree" draw={false} accent="#e3b77e" className="h-7 w-7 shrink-0 text-cream-50" /> Волонтёры помогут зарегистрироваться на платформе и начать дерево.</p>
+              <p className="flex gap-3"><BrandIcon name="camera" draw={false} accent="#dcc282" className="h-7 w-7 shrink-0 text-cream-50" /> Возьмите семейные фотографии и документы — оцифруем на месте.</p>
+              <p className="flex gap-3"><BrandIcon name="mic" draw={false} accent="#dcc282" className="h-7 w-7 shrink-0 text-cream-50" /> Приводите старшее поколение — запишем их воспоминания.</p>
+              <p className="flex gap-3"><BrandIcon name="tree" draw={false} accent="#dcc282" className="h-7 w-7 shrink-0 text-cream-50" /> Волонтёры помогут зарегистрироваться на платформе и начать дерево.</p>
             </Reveal>
           </div>
           <Reveal className="rounded-[2rem] bg-white/[0.04] p-6 ring-1 ring-white/10 sm:p-10">
             {open ? (
               <FestivalForm zones={FESTIVAL_ZONE_NAMES} />
             ) : (
-              <p className="py-10 text-center font-serif text-2xl">Регистрация сейчас закрыта. Следите за новостями!</p>
+              <p className="py-10 text-center font-serif text-2xl">Регистрация сейчас закрыта. Следите за новостями!</p>
             )}
           </Reveal>
         </div>

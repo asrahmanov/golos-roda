@@ -12,15 +12,15 @@ export default async function ResetPage({ params }: { params: Promise<{ token: s
     return (
       <>
         <h1 className="h-display text-4xl sm:text-5xl">Ссылка устарела</h1>
-        <p className="mt-3 text-ink-500">Ссылка для смены пароля действует 2 часа и только один раз.</p>
-        <Link href="/forgot" className="btn-dark mt-10 w-full py-4">Запросить новую ссылку</Link>
+        <p className="mt-3 text-ink-500">Ссылка для смены пароля действует 2 часа и только один раз.</p>
+        <Link href="/forgot" className="btn-gold mt-10 w-full py-4">Запросить новую ссылку</Link>
       </>
     );
   }
   return (
     <>
       <h1 className="h-display text-4xl sm:text-5xl">Новый пароль</h1>
-      <p className="mt-3 text-ink-500">Для аккаунта {row.user.email}</p>
+      <p className="mt-3 text-ink-500">Для аккаунта {row.user.email}</p>
       <div className="mt-10"><ResetForm token={token} /></div>
     </>
   );

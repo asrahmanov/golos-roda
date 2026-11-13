@@ -28,11 +28,11 @@ export function SiteFooter({ settings }: { settings: Settings }) {
         <div>
           <h4 className="eyebrow mb-4">Участникам</h4>
           <ul className="space-y-2.5 text-sm">
-            <li><Link className="hover:text-cream-50" href="/register">Создать дерево</Link></li>
+            <li><Link className="hover:text-cream-50" href="/register">Создать летопись</Link></li>
             <li><Link className="hover:text-cream-50" href="/festival">Фестиваль {settings.festivalDateText}</Link></li>
             <li><Link className="hover:text-cream-50" href="/stories">Истории семей</Link></li>
             <li><Link className="hover:text-cream-50" href="/support">Стать партнёром</Link></li>
-            <li><Link className="hover:text-cream-50" href="/#faq">Вопросы и ответы</Link></li>
+            <li><Link className="hover:text-cream-50" href="/#faq">Вопросы и ответы</Link></li>
           </ul>
         </div>
         <div>

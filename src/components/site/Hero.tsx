@@ -50,15 +50,15 @@ export function Hero({
       <svg className="pointer-events-none absolute left-1/2 top-1/2 -z-0 w-[140%] max-w-none -translate-x-1/2 -translate-y-1/2 lg:w-[110%]" viewBox="0 0 400 200" fill="none" aria-hidden>
         <defs>
           <radialGradient id="hero-light">
-            <stop offset="0" stopColor="#f3d7ad" />
-            <stop offset="0.35" stopColor="#d9a86c" stopOpacity="0.6" />
-            <stop offset="1" stopColor="#d9a86c" stopOpacity="0" />
+            <stop offset="0" stopColor="#efe3bf" />
+            <stop offset="0.35" stopColor="#d5b877" stopOpacity="0.6" />
+            <stop offset="1" stopColor="#d5b877" stopOpacity="0" />
           </radialGradient>
         </defs>
         <motion.path
           id="hero-inf"
           d="M200 100c-30-42-55-66-92-66a66 66 0 0 0 0 132c37 0 62-24 92-66zm0 0c30 42 55 66 92 66a66 66 0 0 0 0-132c-37 0-62 24-92 66z"
-          stroke="#d9a86c"
+          stroke="#d5b877"
           strokeOpacity="0.09"
           strokeWidth="1.2"
           initial={{ pathLength: 0 }}
@@ -90,9 +90,9 @@ export function Hero({
           <motion.p className="eyebrow" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             {eyebrow}
           </motion.p>
-          <h1 className="h-display mt-6 text-[clamp(3.2rem,9vw,7.5rem)]">
+          <h1 className="h-display mt-6 text-[clamp(3.2rem,9vw,7.5rem)] leading-[1]">
             {words.map((w, i) => (
-              <span key={i} className="block overflow-hidden pb-2">
+              <span key={i} className="-mb-[0.12em] block overflow-hidden pb-[0.12em]">
                 <motion.span
                   className="block"
                   initial={{ y: '110%' }}
@@ -105,7 +105,7 @@ export function Hero({
             ))}
           </h1>
           <motion.p
-            className="mt-6 max-w-xl font-serif text-xl italic leading-relaxed text-cream-100/80 sm:text-2xl"
+            className="mt-8 max-w-xl text-lg leading-relaxed text-cream-100/80"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.55 }}
@@ -119,11 +119,11 @@ export function Hero({
             transition={{ duration: 0.9, delay: 0.75 }}
           >
             <Link href="/register" data-magnetic className="btn-gold group px-7 py-4 text-[15px]">
-              Начать семейное дерево
+              Создать летопись
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <Link href="/festival" data-magnetic className="btn-ghost px-7 py-4 text-[15px] text-cream-50">
-              <BrandIcon name="calendar" draw={false} accent="#e3b77e" className="h-5 w-5 text-gold-400" />
+              <BrandIcon name="calendar" draw={false} accent="#dcc282" className="h-5 w-5 text-gold-400" />
               Фестиваль {festivalDateText}
             </Link>
           </motion.div>
@@ -140,27 +140,15 @@ export function Hero({
         >
           <div className="relative aspect-[4/3.4] overflow-hidden rounded-[2rem] shadow-[0_40px_120px_-30px_rgba(0,0,0,0.8)] ring-1 ring-white/10 sm:aspect-[4/3.6] lg:aspect-[4/4.6]">
             <motion.div style={{ y: imgY, scale: imgScale }} className="absolute inset-[-8%]">
-              <Image src="/img/sculpture.jpg" alt="Эскиз скульптуры «Голос рода»: руки старшего и младшего поколений внутри знака бесконечности" fill priority className="object-cover" sizes="(min-width:1024px) 50vw, 100vw" />
+              <Image src="/img/sculpture.jpg" alt="Эскиз скульптуры «Голос рода»: руки старшего и младшего поколений внутри знака бесконечности" fill priority className="object-cover" sizes="(min-width:1024px) 50vw, 100vw" />
             </motion.div>
             <div className="absolute inset-0 bg-gradient-to-t from-ink-950/70 via-transparent to-transparent" />
             <div className="absolute inset-x-5 bottom-5 flex items-end justify-between gap-4 sm:inset-x-7 sm:bottom-7">
               <p className="max-w-xs text-xs leading-relaxed text-cream-100/75 sm:text-sm">
-                Символ проекта — руки двух поколений, соединённые в знаке бесконечности.
+                Символ проекта — руки двух поколений, соединённые в знаке бесконечности.
               </p>
             </div>
           </div>
-          <motion.div
-            className="absolute -left-4 top-10 hidden rounded-2xl bg-cream-50 p-4 text-ink-900 shadow-2xl sm:block lg:-left-10"
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 1.3, duration: 0.8 }}
-          >
-            <div className="animate-float">
-              <p className="text-[11px] font-bold uppercase tracking-widest text-gold-600">Цель запуска</p>
-              <p className="mt-1 font-serif text-3xl font-semibold">100 семей</p>
-              <p className="text-xs text-ink-500">и 50+ семейных деревьев</p>
-            </div>
-          </motion.div>
         </motion.div>
       </div>
     </section>

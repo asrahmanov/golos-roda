@@ -9,7 +9,7 @@ import { Logo } from '@/components/ui/Logo';
 import { cn } from '@/lib/utils';
 
 const NAV = [
-  { href: '/#mission', label: 'О проекте' },
+  { href: '/#mission', label: 'О проекте' },
   { href: '/#platform', label: 'Платформа' },
   { href: '/festival', label: 'Фестиваль' },
   { href: '/stories', label: 'Истории' },
@@ -50,7 +50,7 @@ export function SiteHeader({ loggedIn, announcement }: { loggedIn: boolean; anno
       <header
         className={cn(
           'sticky top-0 z-40 transition-all duration-500',
-          scrolled ? 'bg-cream-50/85 shadow-[0_1px_0_rgba(20,17,15,0.06)] backdrop-blur-xl' : overDark ? 'bg-ink-900' : 'bg-cream-50',
+          scrolled ? 'bg-cream-50/85 shadow-[0_1px_0_rgba(11,23,18,0.06)] backdrop-blur-xl' : overDark ? 'bg-ink-900' : 'bg-cream-50',
         )}
       >
         <div className="container-x flex h-16 items-center justify-between gap-6 sm:h-20">
@@ -73,7 +73,7 @@ export function SiteHeader({ loggedIn, announcement }: { loggedIn: boolean; anno
           <div className="hidden items-center gap-2 lg:flex">
             {loggedIn ? (
               <Link href="/app" className="btn-gold btn-sm">
-                Моя семья
+                Моя летопись
               </Link>
             ) : (
               <>
@@ -81,7 +81,7 @@ export function SiteHeader({ loggedIn, announcement }: { loggedIn: boolean; anno
                   Войти
                 </Link>
                 <Link href="/register" data-magnetic className="btn-gold btn-sm">
-                  Создать дерево
+                  Создать летопись
                 </Link>
               </>
             )}
@@ -122,12 +122,12 @@ export function SiteHeader({ loggedIn, announcement }: { loggedIn: boolean; anno
             <div className="container-x grid gap-3 pb-10">
               {loggedIn ? (
                 <Link href="/app" className="btn-gold w-full">
-                  Моя семья
+                  Моя летопись
                 </Link>
               ) : (
                 <>
                   <Link href="/register" className="btn-gold w-full">
-                    Создать семейное дерево
+                    Создать летопись
                   </Link>
                   <Link href="/login" className="btn-ghost w-full">
                     Войти

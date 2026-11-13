@@ -33,7 +33,7 @@ function Success({ text, dark = true }: { text: string; dark?: boolean }) {
   return (
     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="py-10 text-center">
       <motion.div initial={{ rotate: -20, scale: 0 }} animate={{ rotate: 0, scale: 1 }} transition={{ type: 'spring', delay: 0.1 }}>
-        <BrandIcon name="celebrate" accent={dark ? '#e3b77e' : '#c58d4f'} className={cn('mx-auto h-20 w-20', dark ? 'text-cream-50' : 'text-ink-900')} />
+        <BrandIcon name="celebrate" accent={dark ? '#dcc282' : '#c2a057'} className={cn('mx-auto h-20 w-20', dark ? 'text-cream-50' : 'text-ink-900')} />
       </motion.div>
       <h3 className={cn('mt-6 font-serif text-3xl font-semibold', dark ? 'text-cream-50' : 'text-ink-900')}>Спасибо!</h3>
       <p className={cn('mx-auto mt-3 max-w-md', dark ? 'text-cream-100/70' : 'text-ink-600')}>{text}</p>
@@ -71,11 +71,11 @@ export function FestivalForm({ zones }: { zones: string[] }) {
           ))}
         </div>
       </fieldset>
-      <textarea name="comment" rows={3} placeholder="Комментарий: что хотите принести, нужна ли помощь с доступностью" className="input-dark resize-none" />
+      <textarea name="comment" rows={3} placeholder="Комментарий: что хотите принести, нужна ли помощь с доступностью" className="input-dark resize-none" />
       <label className="flex items-start gap-3 text-sm text-cream-100/70">
         <input type="checkbox" name="consent" required className="mt-1 h-4 w-4 accent-gold-500" />
         <span>
-          Согласен(на) на обработку персональных данных в соответствии с{' '}
+          Согласен(на) на обработку персональных данных в соответствии с{' '}
           <Link href="/privacy" className="text-gold-300 underline" target="_blank">политикой конфиденциальности</Link>
         </span>
       </label>
@@ -92,7 +92,7 @@ export function PartnerForm({ defaultKind = 'CONTACT' }: { defaultKind?: string 
     <form action={action} className="grid gap-4">
       <input type="text" name="website" className="hidden" tabIndex={-1} autoComplete="off" />
       <label className="block">
-        <span className="label">Как хотите помочь?</span>
+        <span className="label">Как хотите помочь?</span>
         <select name="kind" defaultValue={defaultKind} className="input">
           {Object.entries(REQUEST_KIND_LABEL).map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
@@ -105,16 +105,16 @@ export function PartnerForm({ defaultKind = 'CONTACT' }: { defaultKind?: string 
         <input name="email" type="email" placeholder="Почта" className="input" autoComplete="email" />
         <input name="phone" type="tel" placeholder="Телефон" className="input" autoComplete="tel" />
       </div>
-      <textarea name="message" required rows={4} placeholder="Расскажите о вашем предложении *" className="input resize-none" />
+      <textarea name="message" required rows={4} placeholder="Расскажите о вашем предложении *" className="input resize-none" />
       <label className="flex items-start gap-3 text-sm text-ink-600">
         <input type="checkbox" name="consent" required className="mt-1 h-4 w-4 accent-gold-600" />
         <span>
-          Согласен(на) на обработку персональных данных в соответствии с{' '}
+          Согласен(на) на обработку персональных данных в соответствии с{' '}
           <Link href="/privacy" className="text-gold-700 underline" target="_blank">политикой конфиденциальности</Link>
         </span>
       </label>
       <FormMessage state={state} />
-      <SubmitButton className="btn-dark w-full py-4" pendingText="Отправляем…">Отправить заявку</SubmitButton>
+      <SubmitButton className="btn-gold w-full py-4" pendingText="Отправляем…">Отправить заявку</SubmitButton>
     </form>
   );
 }
