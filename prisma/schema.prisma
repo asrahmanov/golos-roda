@@ -28,6 +28,7 @@ enum Gender {
 enum RelationType {
   PARENT
   SPOUSE
+  SIBLING
 }
 
 enum MaterialType {

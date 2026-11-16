@@ -230,6 +230,7 @@ export async function createPersonAction(_: ActionState, fd: FormData): Promise<
         if (otherParents.length === 1 && fd.get('linkSpouse') === 'on') {
           await db.relation.create({ data: { familyId, type: 'SPOUSE', fromId: otherParents[0].fromId, toId: person.id } }).catch(() => null);
         }
+        await adoptSiblingGroup(familyId, relative.id, person.id);
       } else if (relation === 'child') {
         await db.relation.create({ data: { familyId, type: 'PARENT', fromId: relative.id, toId: person.id } });
         const coParentId = optStr(fd.get('coParentId'));
@@ -242,13 +243,13 @@ export async function createPersonAction(_: ActionState, fd: FormData): Promise<
       } else if (relation === 'sibling') {
         const parents = await db.relation.findMany({ where: { type: 'PARENT', toId: relative.id } });
         if (parents.length === 0) {
-          await db.person.delete({ where: { id: person.id } });
-          return { error: 'Чтобы добавить брата или сестру, сначала добавьте хотя бы одного родителя' };
+          await db.relation.create({ data: { familyId, type: 'SIBLING', fromId: relative.id, toId: person.id } });
+        } else {
+          await db.relation.createMany({
+            data: parents.map((p) => ({ familyId, type: 'PARENT' as const, fromId: p.fromId, toId: person.id })),
+            skipDuplicates: true,
+          });
         }
-        await db.relation.createMany({
-          data: parents.map((p) => ({ familyId, type: 'PARENT' as const, fromId: p.fromId, toId: person.id })),
-          skipDuplicates: true,
-        });
       }
     }
 
@@ -257,7 +258,8 @@ export async function createPersonAction(_: ActionState, fd: FormData): Promise<
     }
 
     await logActivity(familyId, user.id, 'person.create', `добавил(а) родственника: ${personShortName(person)}`, `/app/family/${familyId}/person/${person.id}`);
-    target = fd.get('stay') === '1' ? '' : `/app/family/${familyId}/person/${person.id}`;
+    target =
+      fd.get('stay') === '1' ? '' : fd.get('back') === 'tree' ? `/app/family/${familyId}?focus=${person.id}` : `/app/family/${familyId}/person/${person.id}`;
     revalidatePath(`/app/family/${familyId}`, 'layout');
     if (!target) return { ok: true, message: `${personShortName(person)} добавлен(а) в дерево` };
   } catch (e) {
@@ -320,11 +322,33 @@ export async function addRelationAction(_: ActionState, fd: FormData): Promise<A
     await db.relation.create({ data: { ...data, familyId } }).catch(() => {
       throw new Error('Такая связь уже существует');
     });
+    if (data.type === 'PARENT') await adoptSiblingGroup(familyId, data.toId, data.fromId);
     revalidatePath(`/app/family/${familyId}`, 'layout');
     return { ok: true, message: 'Связь добавлена' };
   } catch (e) {
     return fail(e);
   }
+}
+
+/** Братья и сёстры с неизвестными родителями получают найденного родителя вместе; связь «без родителей» больше не нужна. */
+async function adoptSiblingGroup(familyId: string, personId: string, parentId: string) {
+  const group = new Set([personId]);
+  let frontier = [personId];
+  while (frontier.length) {
+    const rels = await db.relation.findMany({
+      where: { type: 'SIBLING', OR: [{ fromId: { in: frontier } }, { toId: { in: frontier } }] },
+      select: { fromId: true, toId: true },
+    });
+    frontier = [];
+    for (const r of rels) for (const id of [r.fromId, r.toId]) if (!group.has(id)) { group.add(id); frontier.push(id); }
+  }
+  if (group.size < 2) return;
+  for (const id of group) {
+    if (id === personId) continue;
+    const count = await db.relation.count({ where: { type: 'PARENT', toId: id } });
+    if (count < 2) await db.relation.create({ data: { familyId, type: 'PARENT', fromId: parentId, toId: id } }).catch(() => null);
+  }
+  await db.relation.deleteMany({ where: { type: 'SIBLING', fromId: { in: [...group] }, toId: { in: [...group] } } });
 }
 
 async function isAncestor(personId: string, maybeDescendantOf: string) {

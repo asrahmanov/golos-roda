@@ -16,13 +16,15 @@ export default async function NewPersonPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ relativeId?: string; relation?: string; me?: string }>;
+  searchParams: Promise<{ relativeId?: string; relation?: string; me?: string; gender?: string; back?: string }>;
 }) {
   const { id } = await params;
   const sp = await searchParams;
   const { membership } = await requireFamily(id, 'edit');
   const relative = sp.relativeId ? await db.person.findFirst({ where: { id: sp.relativeId, familyId: id } }) : null;
   const relation = relative && sp.relation && TITLES[sp.relation] ? sp.relation : undefined;
+  const gender = sp.gender === 'MALE' || sp.gender === 'FEMALE' ? sp.gender : undefined;
+  const back = sp.back === 'tree' ? 'tree' : undefined;
 
   let coParents: { id: string; name: string }[] = [];
   let linkSpouse: string | undefined;
@@ -41,12 +43,19 @@ export default async function NewPersonPage({
   }
   if (relative && relation === 'sibling') lastName = relative.lastName;
 
+  let title = relation ? TITLES[relation] : 'Новый человек в дереве';
+  if (relation === 'spouse' && relative?.gender === 'MALE') title = 'Добавить супругу';
+  if (relation === 'spouse' && relative?.gender === 'FEMALE') title = 'Добавить супруга';
+  if (relation === 'parent' && gender) title = gender === 'MALE' ? 'Добавить отца' : 'Добавить мать';
+
+  const backHref = back === 'tree' ? `/app/family/${id}${relative ? `?focus=${relative.id}` : ''}` : relative ? `/app/family/${id}/person/${relative.id}` : `/app/family/${id}`;
+
   return (
     <div className="mx-auto max-w-3xl">
-      <Link href={relative ? `/app/family/${id}/person/${relative.id}` : `/app/family/${id}`} className="inline-flex items-center gap-2 text-sm font-semibold text-ink-500 hover:text-ink-900">
-        <ArrowLeft className="h-4 w-4" /> Назад
+      <Link href={backHref} className="inline-flex items-center gap-2 text-sm font-semibold text-ink-500 hover:text-ink-900">
+        <ArrowLeft className="h-4 w-4" /> {back === 'tree' ? 'К дереву' : 'Назад'}
       </Link>
-      <h2 className="h-display mt-5 text-3xl sm:text-4xl">{relation ? TITLES[relation] : 'Новый человек в дереве'}</h2>
+      <h2 className="h-display mt-5 text-3xl sm:text-4xl">{title}</h2>
       {relative && <p className="mt-2 text-ink-500">для {personShortName(relative)}</p>}
       <div className="card mt-8 p-6 sm:p-10">
         <PersonForm
@@ -57,7 +66,8 @@ export default async function NewPersonPage({
           showLinkSpouse={linkSpouse}
           showIsMe={!membership.personId}
           defaultIsMe={sp.me === '1'}
-          values={{ lastName }}
+          back={back}
+          values={{ lastName, gender }}
         />
       </div>
     </div>

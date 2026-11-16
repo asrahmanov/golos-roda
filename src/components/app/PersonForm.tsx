@@ -30,6 +30,7 @@ export function PersonForm({
   showLinkSpouse,
   showIsMe,
   defaultIsMe,
+  back,
 }: {
   familyId: string;
   values?: PersonValues;
@@ -39,6 +40,7 @@ export function PersonForm({
   showLinkSpouse?: string;
   showIsMe?: boolean;
   defaultIsMe?: boolean;
+  back?: 'tree';
 }) {
   const editing = !!values.id;
   const [state, action] = useActionState(editing ? updatePersonAction : createPersonAction, undefined);
@@ -51,6 +53,7 @@ export function PersonForm({
       {values.id && <input type="hidden" name="id" value={values.id} />}
       {relativeId && <input type="hidden" name="relativeId" value={relativeId} />}
       {relation && <input type="hidden" name="relation" value={relation} />}
+      {back && <input type="hidden" name="back" value={back} />}
 
       <div className="flex flex-wrap gap-2">
         {[

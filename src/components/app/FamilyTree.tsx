@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Crosshair, Maximize2, Minus, Plus, UserPlus, X, ArrowUpRight, Search } from 'lucide-react';
+import { Crosshair, Info, Maximize2, Minus, Plus, X, ArrowUpRight, Search } from 'lucide-react';
 import { CARD_H, CARD_W, layoutTree, type TreeRelation } from '@/lib/tree-layout';
 import { cn, initials, lifeYears } from '@/lib/utils';
+import { TreeBackdrop } from './TreeBackdrop';
 
 export type TreeNode = {
   id: string;
@@ -27,18 +28,21 @@ export function FamilyTree({
   relations,
   meId,
   canEdit,
+  focusId,
 }: {
   familyId: string;
   persons: TreeNode[];
   relations: TreeRelation[];
   meId: string | null;
   canEdit: boolean;
+  focusId?: string | null;
 }) {
-  const layout = useMemo(() => layoutTree(persons, relations), [persons, relations]);
+  const layout = useMemo(() => layoutTree(persons, relations, meId), [persons, relations, meId]);
   const byId = useMemo(() => new Map(persons.map((p) => [p.id, p])), [persons]);
   const wrap = useRef<HTMLDivElement>(null);
   const [view, setView] = useState({ x: 0, y: 0, k: 1 });
   const [selected, setSelected] = useState<string | null>(null);
+  const [hints, setHints] = useState(false);
   const [query, setQuery] = useState('');
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const downNode = useRef<string | null>(null);
@@ -67,7 +71,10 @@ export function FamilyTree({
   useEffect(() => {
     const el = wrap.current;
     const fitK = el ? Math.min(el.clientWidth / (layout.width + PAD * 2), el.clientHeight / (layout.height + PAD * 2)) : 1;
-    if (meId && fitK < 0.55) focus(meId, 0.85);
+    if (focusId && byId.has(focusId)) {
+      focus(focusId, 1);
+      setSelected(focusId);
+    } else if (meId && fitK < 0.55) focus(meId, 0.85);
     else fit();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [layout]);
@@ -101,6 +108,7 @@ export function FamilyTree({
   };
 
   const onPointerDown = (e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest('[data-action]')) return;
     downNode.current = ((e.target as HTMLElement).closest('[data-node]') as HTMLElement | null)?.dataset.node ?? null;
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -136,7 +144,12 @@ export function FamilyTree({
     pointers.current.delete(e.pointerId);
     const dr = drag.current;
     if (pointers.current.size === 0) {
-      if (dr && !dr.moved) setSelected(downNode.current);
+      if (dr && !dr.moved) {
+        const id = downNode.current;
+        setSelected(id);
+        setHints(false);
+        if (id && view.k < 0.7) focus(id, 0.9);
+      }
       drag.current = null;
     } else if (pointers.current.size === 1) {
       const [p] = [...pointers.current.values()];
@@ -148,12 +161,23 @@ export function FamilyTree({
     ? persons.filter((p) => `${p.firstName} ${p.lastName ?? ''} ${p.middleName ?? ''}`.toLowerCase().includes(query.trim().toLowerCase())).slice(0, 6)
     : [];
   const sel = selected ? byId.get(selected) : null;
-  const relOf = (id: string) => ({
-    parents: relations.filter((r) => r.type === 'PARENT' && r.toId === id).length,
-  });
+  const parentsOf = (id: string) => relations.filter((r) => r.type === 'PARENT' && r.toId === id).map((r) => byId.get(r.fromId)).filter(Boolean) as TreeNode[];
+  const addHref = (id: string, relation: string, gender?: 'MALE' | 'FEMALE') =>
+    `/app/family/${familyId}/person/new?relativeId=${id}&relation=${relation}${gender ? `&gender=${gender}` : ''}&back=tree`;
+  const actionsFor = (p: TreeNode): AddAction[] => {
+    const ps = parentsOf(p.id);
+    const opposite = (g?: string) => (g === 'MALE' ? 'FEMALE' : g === 'FEMALE' ? 'MALE' : undefined);
+    const list: AddAction[] = [{ pos: 'bottom', label: 'Добавить ребёнка', href: addHref(p.id, 'child') }];
+    if (ps.length < 2) list.push({ pos: 'top', label: 'Добавить родителя', href: addHref(p.id, 'parent', ps.length === 1 ? opposite(ps[0].gender) : undefined) });
+    if (p.gender === 'FEMALE') list.push({ pos: 'left', label: 'Добавить супруга', href: addHref(p.id, 'spouse', 'MALE') });
+    else list.push({ pos: 'right', label: p.gender === 'MALE' ? 'Добавить супругу' : 'Добавить супруга(у)', href: addHref(p.id, 'spouse', opposite(p.gender)) });
+    if (ps.length === 0) list.push({ pos: 'corner', label: 'Добавить брата или сестру', note: 'если родители неизвестны', href: addHref(p.id, 'sibling') });
+    return list;
+  };
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-[1.75rem] bg-[radial-gradient(circle_at_1px_1px,rgba(17,33,26,0.09)_1px,transparent_0)] [background-size:22px_22px] bg-cream-100 ring-1 ring-ink-900/8">
+    <div className="relative h-full w-full overflow-hidden rounded-[1.75rem] bg-cream-100 ring-1 ring-ink-900/8">
+      <TreeBackdrop />
       <div
         ref={wrap}
         className="absolute inset-0 cursor-grab touch-none select-none active:cursor-grabbing"
@@ -172,8 +196,9 @@ export function FamilyTree({
                 key={i + e.d}
                 d={e.d}
                 fill="none"
-                stroke={e.kind === 'spouse' ? '#c2a057' : '#7d8d84'}
+                stroke={e.kind === 'spouse' ? '#c2a057' : e.kind === 'sibling' ? '#a08340' : '#7d8d84'}
                 strokeWidth={e.kind === 'spouse' ? 2.5 : 1.6}
+                strokeDasharray={e.kind === 'sibling' ? '5 6' : undefined}
                 strokeLinecap="round"
                 initial={{ pathLength: 0, opacity: 0 }}
                 animate={{ pathLength: 1, opacity: 1 }}
@@ -184,43 +209,51 @@ export function FamilyTree({
           {layout.placed.map((n, i) => {
             const p = byId.get(n.id)!;
             const me = n.id === meId;
+            const isSel = selected === n.id;
             return (
               <motion.div
                 key={n.id}
-                data-node={n.id}
-                className={cn(
-                  'absolute flex cursor-pointer items-center gap-3 rounded-2xl bg-white p-3 shadow-[0_8px_30px_-12px_rgba(11,23,18,0.35)] ring-1 transition-shadow hover:shadow-[0_16px_40px_-12px_rgba(11,23,18,0.45)]',
-                  selected === n.id ? 'ring-2 ring-gold-500' : me ? 'ring-2 ring-gold-400/70' : 'ring-ink-900/8',
-                  !p.isLiving && 'bg-cream-50',
-                )}
+                className={cn('absolute', isSel ? 'z-30' : 'z-0')}
                 style={{ left: n.x, top: n.y, width: CARD_W, height: CARD_H }}
                 initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: Math.min(i, 30) * 0.025, type: 'spring', stiffness: 200, damping: 20 }}
+                animate={{ opacity: 1, scale: isSel ? 1.12 : 1 }}
+                transition={{ delay: isSel ? 0 : Math.min(i, 30) * 0.025, type: 'spring', stiffness: 260, damping: 22 }}
               >
-                <span
+                <div
+                  data-node={n.id}
                   className={cn(
-                    'relative grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-full font-serif text-lg font-semibold',
-                    p.gender === 'FEMALE' ? 'bg-rose-500/12 text-rose-500' : p.gender === 'MALE' ? 'bg-sage-500/15 text-sage-500' : 'bg-cream-200 text-ink-500',
-                    !p.isLiving && 'grayscale',
+                    'relative flex h-full w-full cursor-pointer items-center gap-3 rounded-2xl bg-white p-3 ring-1 transition-shadow',
+                    isSel
+                      ? 'shadow-[0_24px_60px_-18px_rgba(11,23,18,0.55)] ring-2 ring-gold-500'
+                      : cn('shadow-[0_8px_30px_-12px_rgba(11,23,18,0.35)] hover:shadow-[0_16px_40px_-12px_rgba(11,23,18,0.45)]', me ? 'ring-2 ring-gold-400/70' : 'ring-ink-900/8'),
+                    !p.isLiving && 'bg-cream-50',
                   )}
                 >
-                  {p.avatar ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={p.avatar} alt="" className="h-full w-full object-cover" draggable={false} />
-                  ) : (
-                    initials(`${p.firstName} ${p.lastName ?? ''}`)
+                  <span
+                    className={cn(
+                      'relative grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-full font-serif text-lg font-semibold',
+                      p.gender === 'FEMALE' ? 'bg-rose-500/12 text-rose-500' : p.gender === 'MALE' ? 'bg-sage-500/15 text-sage-500' : 'bg-cream-200 text-ink-500',
+                      !p.isLiving && 'grayscale',
+                    )}
+                  >
+                    {p.avatar ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.avatar} alt="" className="h-full w-full object-cover" draggable={false} />
+                    ) : (
+                      initials(`${p.firstName} ${p.lastName ?? ''}`)
+                    )}
+                  </span>
+                  <span className="min-w-0 leading-tight">
+                    <span className="block truncate text-[14px] font-bold text-ink-900">{p.firstName}</span>
+                    <span className="block truncate text-[12px] text-ink-600">{p.lastName}</span>
+                    <span className="mt-1 block truncate text-[11px] text-ink-400">{lifeYears(p) || ' '}</span>
+                  </span>
+                  {me && <span className="absolute -top-2 left-3 rounded-full bg-gold-500 px-2 py-0.5 text-[10px] font-bold text-ink-950">это я</span>}
+                  {p.materials > 0 && (
+                    <span className="absolute -bottom-2 right-3 rounded-full bg-ink-900 px-2 py-0.5 text-[10px] font-bold text-gold-300">{p.materials}</span>
                   )}
-                </span>
-                <span className="min-w-0 leading-tight">
-                  <span className="block truncate text-[14px] font-bold text-ink-900">{p.firstName}</span>
-                  <span className="block truncate text-[12px] text-ink-600">{p.lastName}</span>
-                  <span className="mt-1 block truncate text-[11px] text-ink-400">{lifeYears(p) || ' '}</span>
-                </span>
-                {me && <span className="absolute -top-2 right-3 rounded-full bg-gold-500 px-2 py-0.5 text-[10px] font-bold text-ink-950">это я</span>}
-                {p.materials > 0 && (
-                  <span className="absolute -bottom-2 right-3 rounded-full bg-ink-900 px-2 py-0.5 text-[10px] font-bold text-gold-300">{p.materials}</span>
-                )}
+                </div>
+                {isSel && canEdit && <AddActions actions={actionsFor(p)} hints={hints} onToggleHints={() => setHints((h) => !h)} />}
               </motion.div>
             );
           })}
@@ -271,7 +304,7 @@ export function FamilyTree({
         ))}
       </div>
       <div className="pointer-events-none absolute bottom-4 left-4 z-10 hidden rounded-full bg-white/80 px-3 py-1.5 text-[11px] text-ink-500 backdrop-blur sm:block">
-        Перетаскивайте дерево, масштаб — колёсиком или жестом
+        Нажмите на карточку, чтобы добавить родственников. Дерево можно перетаскивать и масштабировать
       </div>
 
       {/* Панель выбранного */}
@@ -305,37 +338,90 @@ export function FamilyTree({
                 <p className="mt-0.5 text-xs text-ink-400">{[lifeYears(sel), sel.occupation].filter(Boolean).join(' · ')}</p>
               </div>
             </div>
-            <Link href={`/app/family/${familyId}/person/${sel.id}`} className="btn-dark mt-5 w-full">
+            <Link href={`/app/family/${familyId}/person/${sel.id}`} className="btn-gold mt-5 w-full">
               Открыть карточку <ArrowUpRight className="h-4 w-4" />
             </Link>
             {canEdit && (
-              <div className="mt-4">
-                <p className="mb-2 flex items-center gap-1.5 text-xs font-semibold text-ink-500">
-                  <UserPlus className="h-3.5 w-3.5" /> Добавить родственника
-                </p>
-                <div className="grid grid-cols-2 gap-2">
-                  {[
-                    { r: 'parent', l: 'Родителя', hide: relOf(sel.id).parents >= 2 },
-                    { r: 'child', l: 'Ребёнка' },
-                    { r: 'spouse', l: 'Супруга(у)' },
-                    { r: 'sibling', l: 'Брата / сестру', hide: relOf(sel.id).parents === 0 },
-                  ]
-                    .filter((b) => !b.hide)
-                    .map((b) => (
-                      <Link
-                        key={b.r}
-                        href={`/app/family/${familyId}/person/new?relativeId=${sel.id}&relation=${b.r}`}
-                        className="rounded-xl border border-ink-900/10 px-3 py-2.5 text-center text-sm font-medium transition hover:border-gold-500 hover:bg-gold-500/10"
-                      >
-                        {b.l}
-                      </Link>
-                    ))}
-                </div>
-              </div>
+              <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-ink-500">
+                <Plus className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-600" />
+                Чтобы добавить родственника, нажмите «+» вокруг карточки. Значок «i» покажет подсказки.
+              </p>
             )}
           </motion.aside>
         )}
       </AnimatePresence>
     </div>
+  );
+}
+
+type AddAction = { pos: 'top' | 'bottom' | 'left' | 'right' | 'corner'; label: string; note?: string; href: string };
+
+const SPOT: Record<AddAction['pos'] | 'info', string> = {
+  top: 'left-1/2 top-0 -translate-x-1/2 -translate-y-[calc(100%+10px)]',
+  bottom: 'left-1/2 bottom-0 -translate-x-1/2 translate-y-[calc(100%+10px)]',
+  left: 'left-0 top-1/2 -translate-x-[calc(100%+10px)] -translate-y-1/2',
+  right: 'right-0 top-1/2 translate-x-[calc(100%+10px)] -translate-y-1/2',
+  corner: 'right-0 top-0 translate-x-[calc(100%+2px)] -translate-y-[calc(100%+2px)]',
+  info: 'left-0 top-0 -translate-x-[calc(100%+4px)] -translate-y-[calc(100%+4px)]',
+};
+const LABEL: Record<AddAction['pos'], string> = {
+  top: 'bottom-full left-1/2 mb-2 -translate-x-1/2 text-center',
+  bottom: 'top-full left-1/2 mt-2 -translate-x-1/2 text-center',
+  left: 'right-full top-1/2 mr-2 -translate-y-1/2 text-right',
+  right: 'left-full top-1/2 ml-2 -translate-y-1/2',
+  corner: 'left-full bottom-1/2 ml-2',
+};
+
+function AddActions({ actions, hints, onToggleHints }: { actions: AddAction[]; hints: boolean; onToggleHints: () => void }) {
+  return (
+    <>
+      {actions.map((a, i) => (
+        <div key={a.pos} className={cn('absolute', SPOT[a.pos])}>
+          <motion.div initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.05 + i * 0.04, type: 'spring', stiffness: 380, damping: 20 }}>
+            <Link
+              data-action
+              href={a.href}
+              title={a.label}
+              aria-label={a.label}
+              className="grid h-9 w-9 place-items-center rounded-full bg-gold-500 text-ink-950 shadow-[0_8px_20px_-6px_rgba(123,100,47,0.7)] ring-4 ring-cream-100 transition hover:scale-110 hover:bg-gold-400"
+            >
+              <Plus className="h-4 w-4" strokeWidth={2.6} />
+            </Link>
+          </motion.div>
+          <AnimatePresence>
+            {hints && (
+              <motion.span
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className={cn('pointer-events-none absolute whitespace-nowrap rounded-xl bg-ink-900 px-3 py-1.5 text-[12px] font-semibold leading-tight text-cream-50 shadow-xl', LABEL[a.pos])}
+              >
+                {a.label}
+                {a.note && <span className="block text-[11px] font-normal text-cream-100/60">{a.note}</span>}
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </div>
+      ))}
+      <div className={cn('absolute', SPOT.info)}>
+        <motion.button
+          data-action
+          type="button"
+          onClick={onToggleHints}
+          aria-pressed={hints}
+          aria-label="Подсказки"
+          title="Подсказки"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ delay: 0.25, type: 'spring', stiffness: 380, damping: 20 }}
+          className={cn(
+            'grid h-9 w-9 place-items-center rounded-full ring-4 ring-cream-100 transition',
+            hints ? 'bg-ink-900 text-gold-300' : 'bg-white text-ink-700 shadow-lg hover:text-gold-700',
+          )}
+        >
+          <Info className="h-4 w-4" />
+        </motion.button>
+      </div>
+    </>
   );
 }

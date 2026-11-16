@@ -5,7 +5,7 @@ import { canEdit, requireFamily } from '@/lib/family';
 import { fileUrl } from '@/lib/storage';
 import { FamilyTree } from '@/components/app/FamilyTree';
 
-export default async function FamilyTreePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ joined?: string }> }) {
+export default async function FamilyTreePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ joined?: string; focus?: string }> }) {
   const { id } = await params;
   const sp = await searchParams;
   const { role, membership } = await requireFamily(id);
@@ -57,6 +57,7 @@ export default async function FamilyTreePage({ params, searchParams }: { params:
         <FamilyTree
           familyId={id}
           meId={membership.personId}
+          focusId={sp.focus}
           canEdit={editable}
           relations={relations}
           persons={persons.map((p) => ({
@@ -76,7 +77,7 @@ export default async function FamilyTreePage({ params, searchParams }: { params:
       </div>
       {editable && (
         <div className="flex justify-end">
-          <Link href={`/app/family/${id}/person/new`} className="btn-dark btn-sm">
+          <Link href={`/app/family/${id}/person/new`} className="btn-gold btn-sm">
             <UserPlus className="h-4 w-4" /> Добавить человека
           </Link>
         </div>

@@ -66,11 +66,15 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
   const parents = rels.filter((r) => r.type === 'PARENT' && r.toId === pid).map((r) => ({ p: r.from, relId: r.id }));
   const children = rels.filter((r) => r.type === 'PARENT' && r.fromId === pid).map((r) => ({ p: r.to, relId: r.id }));
   const spouses = rels.filter((r) => r.type === 'SPOUSE').map((r) => ({ p: r.fromId === pid ? r.to : r.from, relId: r.id }));
-  const siblings = parents.length
+  const siblingsByParents = parents.length
     ? await db.person.findMany({
         where: { familyId: id, id: { not: pid }, relTo: { some: { type: 'PARENT', fromId: { in: parents.map((x) => x.p.id) } } } },
       })
     : [];
+  const siblings: { p: P & { gender?: string }; relId?: string }[] = [
+    ...siblingsByParents.map((p) => ({ p })),
+    ...rels.filter((r) => r.type === 'SIBLING').map((r) => ({ p: r.fromId === pid ? r.to : r.from, relId: r.id })),
+  ];
   const g = person.gender;
   const label = {
     parent: (p: P & { gender?: string }) => (p.gender === 'FEMALE' ? 'мама' : p.gender === 'MALE' ? 'папа' : 'родитель'),
@@ -168,7 +172,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
             <div className="mt-3 space-y-0.5">
               {parents.map(({ p, relId }) => <RelPerson key={relId} p={p} familyId={id} label={label.parent(p)} relId={relId} editable={editable} />)}
               {spouses.map(({ p, relId }) => <RelPerson key={relId} p={p} familyId={id} label={label.spouse(p)} relId={relId} editable={editable} />)}
-              {siblings.map((p) => <RelPerson key={p.id} p={p} familyId={id} label={label.sibling(p)} editable={editable} />)}
+              {siblings.map(({ p, relId }) => <RelPerson key={p.id} p={p} familyId={id} label={label.sibling(p)} relId={relId} editable={editable} />)}
               {children.map(({ p, relId }) => <RelPerson key={relId} p={p} familyId={id} label={label.child(p)} relId={relId} editable={editable} />)}
               {!parents.length && !spouses.length && !children.length && !siblings.length && <p className="px-2 text-sm text-ink-400">Связи ещё не указаны.</p>}
             </div>
@@ -180,7 +184,7 @@ export default async function PersonPage({ params }: { params: Promise<{ id: str
                     { r: 'parent', l: g === 'UNKNOWN' ? 'Родителя' : 'Маму / папу', hide: parents.length >= 2 },
                     { r: 'spouse', l: 'Супруга(у)' },
                     { r: 'child', l: 'Ребёнка' },
-                    { r: 'sibling', l: 'Брата / сестру', hide: parents.length === 0 },
+                    { r: 'sibling', l: 'Брата / сестру' },
                   ].filter((b) => !b.hide).map((b) => (
                     <Link key={b.r} href={`/app/family/${id}/person/new?relativeId=${pid}&relation=${b.r}`} className="rounded-xl border border-ink-900/10 px-3 py-2.5 text-center text-sm font-medium transition hover:border-gold-500 hover:bg-gold-500/10">
                       + {b.l}
