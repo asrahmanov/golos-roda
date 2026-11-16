@@ -169,8 +169,14 @@ export function FamilyTree({
     const opposite = (g?: string) => (g === 'MALE' ? 'FEMALE' : g === 'FEMALE' ? 'MALE' : undefined);
     const list: AddAction[] = [{ pos: 'bottom', label: 'Добавить ребёнка', href: addHref(p.id, 'child') }];
     if (ps.length < 2) list.push({ pos: 'top', label: 'Добавить родителя', href: addHref(p.id, 'parent', ps.length === 1 ? opposite(ps[0].gender) : undefined) });
-    if (p.gender === 'FEMALE') list.push({ pos: 'left', label: 'Добавить супруга', href: addHref(p.id, 'spouse', 'MALE') });
-    else list.push({ pos: 'right', label: p.gender === 'MALE' ? 'Добавить супругу' : 'Добавить супруга(у)', href: addHref(p.id, 'spouse', opposite(p.gender)) });
+    const married = relations.some((r) => r.type === 'SPOUSE' && (r.fromId === p.id || r.toId === p.id));
+    if (!married) {
+      list.push(
+        p.gender === 'FEMALE'
+          ? { pos: 'left', label: 'Добавить супруга', href: addHref(p.id, 'spouse', 'MALE') }
+          : { pos: 'right', label: p.gender === 'MALE' ? 'Добавить супругу' : 'Добавить супруга(у)', href: addHref(p.id, 'spouse', opposite(p.gender)) },
+      );
+    }
     if (ps.length === 0) list.push({ pos: 'corner', label: 'Добавить брата или сестру', note: 'если родители неизвестны', href: addHref(p.id, 'sibling') });
     return list;
   };
@@ -316,12 +322,12 @@ export function FamilyTree({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 40 }}
             transition={{ type: 'spring', stiffness: 260, damping: 26 }}
-            className="absolute inset-x-3 bottom-3 z-20 rounded-3xl bg-white p-5 shadow-2xl ring-1 ring-ink-900/10 sm:inset-x-auto sm:bottom-auto sm:right-4 sm:top-4 sm:w-80"
+            className="absolute inset-x-3 bottom-3 z-40 rounded-3xl bg-white p-3 shadow-2xl sm:p-5 ring-1 ring-ink-900/10 sm:inset-x-auto sm:bottom-auto sm:right-4 sm:top-4 sm:w-80"
           >
-            <button onClick={() => setSelected(null)} className="absolute right-3 top-3 rounded-full p-2 text-ink-400 hover:bg-cream-100" aria-label="Закрыть">
+            <button onClick={() => setSelected(null)} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 text-ink-400 hover:bg-cream-100 sm:right-3 sm:top-3 sm:translate-y-0" aria-label="Закрыть">
               <X className="h-4 w-4" />
             </button>
-            <div className="flex items-center gap-4">
+            <div className="hidden items-center gap-4 sm:flex">
               <span className="grid h-16 w-16 shrink-0 place-items-center overflow-hidden rounded-full bg-cream-200 font-serif text-xl font-semibold text-ink-500">
                 {sel.avatar ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -338,11 +344,11 @@ export function FamilyTree({
                 <p className="mt-0.5 text-xs text-ink-400">{[lifeYears(sel), sel.occupation].filter(Boolean).join(' · ')}</p>
               </div>
             </div>
-            <Link href={`/app/family/${familyId}/person/${sel.id}`} className="btn-gold mt-5 w-full">
-              Открыть карточку <ArrowUpRight className="h-4 w-4" />
+            <Link href={`/app/family/${familyId}/person/${sel.id}`} className="btn-gold w-[calc(100%-2.5rem)] whitespace-nowrap sm:mt-5 sm:w-full">
+              <span className="truncate sm:hidden">{sel.firstName} {sel.lastName} ·</span> Открыть карточку <ArrowUpRight className="h-4 w-4 shrink-0" />
             </Link>
             {canEdit && (
-              <p className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-ink-500">
+              <p className="mt-4 hidden items-start gap-2 text-xs leading-relaxed text-ink-500 sm:flex">
                 <Plus className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-600" />
                 Чтобы добавить родственника, нажмите «+» вокруг карточки. Значок «i» покажет подсказки.
               </p>
