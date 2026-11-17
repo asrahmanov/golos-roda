@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation';
 import type { MaterialType, RegistrationStatus, RequestStatus } from '@prisma/client';
 import { db } from '@/lib/db';
 import { hashPassword, requireAdmin } from '@/lib/auth';
-import { DEFAULT_SETTINGS } from '@/lib/settings';
+import { DEFAULT_SETTINGS, LONG_TEXT_KEYS } from '@/lib/settings';
 import { deleteStoredFile, saveUpload } from '@/lib/storage';
 import { int, optStr, slugify, str } from '@/lib/utils';
 import type { ActionState } from '@/components/ui/Form';
@@ -37,7 +37,14 @@ export async function saveSettingsAction(_: ActionState, fd: FormData): Promise<
         continue;
       }
       if (!fd.has(key)) continue;
-      const value = str(fd.get(key), 2000);
+      const value = str(fd.get(key), LONG_TEXT_KEYS.includes(key) ? 100_000 : 2000);
+      if (key === 'privacyText' || key === 'termsText') {
+        const prev = await db.setting.findUnique({ where: { key } });
+        if ((prev?.value ?? DEFAULT_SETTINGS[key]) === value) continue;
+        const stamp = key === 'privacyText' ? 'privacyUpdated' : 'termsUpdated';
+        const date = new Date().toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Europe/Moscow' });
+        await db.setting.upsert({ where: { key: stamp }, create: { key: stamp, value: date }, update: { value: date } });
+      }
       await db.setting.upsert({ where: { key }, create: { key, value }, update: { value } });
     }
     const qr = await maybeImage(fd, 'donationQr');

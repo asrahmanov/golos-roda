@@ -1,6 +1,7 @@
 import 'server-only';
 import { cache } from 'react';
 import { db } from './db';
+import { DEFAULT_PRIVACY_TEXT, DEFAULT_TERMS_TEXT } from './legal';
 
 export const DEFAULT_SETTINGS = {
   heroEyebrow: 'Общественный социально-культурный проект · Москва',
@@ -25,7 +26,13 @@ export const DEFAULT_SETTINGS = {
   budgetText: '≈ 500 000 ₽ — предварительный ориентир бюджета фестиваля',
   showLiveStats: 'true',
   registrationOpen: 'true',
+  privacyText: DEFAULT_PRIVACY_TEXT,
+  privacyUpdated: '',
+  termsText: DEFAULT_TERMS_TEXT,
+  termsUpdated: '',
 };
+
+export const LONG_TEXT_KEYS: SettingKey[] = ['privacyText', 'termsText'];
 
 export type Settings = typeof DEFAULT_SETTINGS;
 export type SettingKey = keyof Settings;
@@ -34,7 +41,7 @@ export const getSettings = cache(async (): Promise<Settings> => {
   const rows = await db.setting.findMany();
   const s: Settings = { ...DEFAULT_SETTINGS };
   for (const r of rows) {
-    if (r.key in s) (s as Record<string, string>)[r.key] = r.value;
+    if (r.key in s && (r.value.trim() || !LONG_TEXT_KEYS.includes(r.key as SettingKey))) (s as Record<string, string>)[r.key] = r.value;
   }
   return s;
 });

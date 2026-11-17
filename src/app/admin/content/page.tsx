@@ -7,6 +7,7 @@ import { FESTIVAL_ZONE_NAMES } from '@/lib/constants';
 import { deleteFaqAction, deletePartnerAction, deleteProgramAction, saveFaqAction, savePartnerAction, saveProgramAction, saveSettingsAction } from '@/actions/admin';
 import { ConfirmButton, Field, SubmitButton } from '@/components/ui/Form';
 import { ActionForm } from '@/components/admin/ActionForm';
+import { EMAIL_TOKEN } from '@/lib/legal';
 
 function Section({ id, title, hint, children }: { id: string; title: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -95,7 +96,7 @@ export default async function ContentPage() {
         <p className="eyebrow">Управление сайтом</p>
         <h1 className="h-display mt-2 text-4xl">Контент сайта</h1>
         <div className="mt-4 flex flex-wrap gap-2 text-sm">
-          {[['settings', 'Основное'], ['faq', 'Вопросы'], ['program', 'Программа'], ['partners', 'Партнёры']].map(([id, l]) => (
+          {[['settings', 'Основное'], ['documents', 'Документы'], ['faq', 'Вопросы'], ['program', 'Программа'], ['partners', 'Партнёры']].map(([id, l]) => (
             <a key={id} href={`#${id}`} className="chip bg-white px-3 py-1.5 text-ink-600 ring-1 ring-ink-900/8 hover:bg-cream-50">{l}</a>
           ))}
         </div>
@@ -150,6 +151,32 @@ export default async function ContentPage() {
           </div>
           <SubmitButton className="btn-gold w-fit">Сохранить настройки</SubmitButton>
         </ActionForm>
+      </Section>
+
+      <Section id="documents" title="Документы">
+        <div className="mb-6 rounded-2xl bg-cream-100 p-4 text-sm leading-relaxed text-ink-600">
+          Абзацы разделяйте пустой строкой. Строка, которая начинается с <b>## </b>, становится подзаголовком. Вместо <b>{EMAIL_TOKEN}</b> на сайте
+          подставится контактная почта из основных настроек. Если очистить поле и сохранить, вернётся исходный текст. Дата редакции обновляется сама
+          при каждом изменении.
+        </div>
+        <div className="grid gap-10">
+          {[
+            { key: 'privacyText' as const, title: 'Политика конфиденциальности и обработка персональных данных', href: '/privacy', updated: s.privacyUpdated },
+            { key: 'termsText' as const, title: 'Условия использования', href: '/terms', updated: s.termsUpdated },
+          ].map((d) => (
+            <ActionForm key={d.key} action={saveSettingsAction} className="grid gap-3">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <h3 className="font-semibold">{d.title}</h3>
+                <span className="text-xs text-ink-500">
+                  {d.updated ? `Редакция от ${d.updated} · ` : ''}
+                  <a href={d.href} target="_blank" rel="noreferrer" className="text-gold-700 underline">открыть на сайте</a>
+                </span>
+              </div>
+              <textarea name={d.key} defaultValue={s[d.key]} rows={18} className="input font-mono text-[13px] leading-relaxed" />
+              <SubmitButton className="btn-gold w-fit">Сохранить</SubmitButton>
+            </ActionForm>
+          ))}
+        </div>
       </Section>
 
       <Section id="faq" title="Вопросы и ответы">
