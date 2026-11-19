@@ -41,6 +41,18 @@ function extFor(name: string, mime: string) {
   return '.' + (mime.split('/')[1] || 'bin').replace(/[^a-z0-9]/g, '');
 }
 
+const MIME_BY_EXT: Record<string, string> = {
+  '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp', '.heic': 'image/heic', '.heif': 'image/heif',
+  '.gif': 'image/gif', '.tif': 'image/tiff', '.tiff': 'image/tiff', '.pdf': 'application/pdf', '.doc': 'application/msword',
+  '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', '.txt': 'text/plain',
+  '.mp3': 'audio/mpeg', '.m4a': 'audio/x-m4a', '.wav': 'audio/wav', '.ogg': 'audio/ogg', '.aac': 'audio/aac',
+  '.mp4': 'video/mp4', '.mov': 'video/quicktime', '.webm': 'video/webm',
+};
+
+export function mimeFromName(name: string) {
+  return MIME_BY_EXT[path.extname(name).toLowerCase()] ?? 'application/octet-stream';
+}
+
 export async function saveUpload(
   file: File,
   opts: { familyId?: string | null; userId?: string | null; isPublic?: boolean; imageOnly?: boolean },
@@ -52,12 +64,23 @@ export async function saveUpload(
   if (file.size > LIMITS[kind]) {
     throw new Error(`Файл слишком большой. Максимум ${Math.round(LIMITS[kind] / 1024 / 1024)} МБ`);
   }
+  return saveBuffer(Buffer.from(await file.arrayBuffer()), file.name, mime, opts);
+}
 
+export async function saveBuffer(
+  buf: Buffer,
+  name: string,
+  mime: string,
+  opts: { familyId?: string | null; userId?: string | null; isPublic?: boolean },
+) {
+  const kind = fileKind(mime);
+  if (!kind) throw new Error('Этот формат файла не поддерживается');
+  if (buf.length > LIMITS[kind]) throw new Error('Файл слишком большой');
+  const file = { name };
   const sub = opts.familyId ? `f/${opts.familyId}` : 'site';
   const dir = path.join(STORAGE_DIR, sub);
   await fs.mkdir(dir, { recursive: true });
   const id = crypto.randomBytes(16).toString('hex');
-  const buf = Buffer.from(await file.arrayBuffer());
 
   let rel: string;
   let thumbRel: string | null = null;

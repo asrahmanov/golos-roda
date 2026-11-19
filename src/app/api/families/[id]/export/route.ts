@@ -7,6 +7,7 @@ import { getMembership, personName } from '@/lib/family';
 import { MATERIAL_LABEL } from '@/lib/constants';
 import { resolveStoragePath } from '@/lib/storage';
 import { slugify } from '@/lib/utils';
+import { IMPORT_FORMAT } from '@/lib/family-import';
 
 export const runtime = 'nodejs';
 export const maxDuration = 300;
@@ -35,6 +36,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
 
   const pname = new Map(family.persons.map((p) => [p.id, personName(p)]));
   const data = {
+    format: IMPORT_FORMAT,
     exportedAt: new Date().toISOString(),
     family: { id: family.id, name: family.name, description: family.description, createdAt: family.createdAt },
     members: family.members.map((x) => ({ name: x.user.name, email: x.user.email, role: x.role })),
@@ -49,6 +51,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
       id: mt.id, type: mt.type, title: mt.title, body: mt.body, dateText: mt.dateText, place: mt.place, externalUrl: mt.externalUrl,
       visibility: mt.visibility, author: mt.author?.name, createdAt: mt.createdAt,
       persons: mt.persons.map((x) => pname.get(x.personId)),
+      personIds: mt.persons.map((x) => x.personId),
       file: mt.file ? `files/materials/${mt.id}-${slugify(mt.title) || 'file'}${mt.file.path.slice(mt.file.path.lastIndexOf('.'))}` : null,
       comments: mt.comments.map((c) => ({ author: c.author.name, text: c.text, createdAt: c.createdAt })),
     })),

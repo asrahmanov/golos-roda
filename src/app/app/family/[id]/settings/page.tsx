@@ -1,4 +1,5 @@
-import { Download, LogOut, Trash2 } from 'lucide-react';
+import Link from 'next/link';
+import { Download, LogOut, Trash2, UploadCloud } from 'lucide-react';
 import { db } from '@/lib/db';
 import { requireFamily } from '@/lib/family';
 import { formatSize } from '@/lib/utils';
@@ -28,9 +29,14 @@ export default async function FamilySettingsPage({ params }: { params: Promise<{
             Скачайте всё: дерево, карточки, воспоминания и оригиналы файлов в одном ZIP-архиве. Рекомендуем делать это время от времени.
           </p>
           <p className="mt-2 text-sm text-ink-400">Файлов: {usage._count} · объём: {formatSize(usage._sum.size ?? 0)} из 5 ГБ</p>
-          <a href={`/api/families/${id}/export`} className="btn-gold mt-5">
-            <Download className="h-4 w-4" /> Скачать архив семьи
-          </a>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <a href={`/api/families/${id}/export`} className="btn-gold">
+              <Download className="h-4 w-4" /> Скачать архив семьи
+            </a>
+            <Link href={`/app/import?target=${id}`} className="btn-ghost">
+              <UploadCloud className="h-4 w-4" /> Загрузить архив или дерево
+            </Link>
+          </div>
         </section>
       )}
 

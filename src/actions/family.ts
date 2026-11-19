@@ -293,6 +293,10 @@ export async function deletePersonAction(fd: FormData) {
   await db.person.delete({ where: { id } });
   if (p.avatarId) await deleteStoredFile(p.avatarId);
   await logActivity(p.familyId, user.id, 'person.delete', `удалил(а) карточку: ${personShortName(p)}`);
+  if (fd.get('stay') === '1') {
+    revalidatePath(`/app/family/${p.familyId}`, 'layout');
+    return;
+  }
   redirect(`/app/family/${p.familyId}`);
 }
 
@@ -306,6 +310,12 @@ export async function addRelationAction(_: ActionState, fd: FormData): Promise<A
     if (!p || !o || p.familyId !== o.familyId || p.id === o.id) return { error: 'Выберите другого родственника' };
     await requireFamily(p.familyId, 'edit');
     const familyId = p.familyId;
+    if (kind === 'sibling') {
+      const message = await linkSiblings(familyId, p.id, o.id);
+      if (message) return { error: message };
+      revalidatePath(`/app/family/${familyId}`, 'layout');
+      return { ok: true, message: 'Связь добавлена' };
+    }
     let data: { type: 'PARENT' | 'SPOUSE'; fromId: string; toId: string };
     if (kind === 'parent') data = { type: 'PARENT', fromId: o.id, toId: p.id };
     else if (kind === 'child') data = { type: 'PARENT', fromId: p.id, toId: o.id };
@@ -328,6 +338,33 @@ export async function addRelationAction(_: ActionState, fd: FormData): Promise<A
   } catch (e) {
     return fail(e);
   }
+}
+
+/** Брат/сестра: общие родители, если они известны хотя бы у одного; иначе — прямая связь. Возвращает текст ошибки. */
+async function linkSiblings(familyId: string, aId: string, bId: string): Promise<string | null> {
+  const [pa, pb] = await Promise.all([
+    db.relation.findMany({ where: { type: 'PARENT', toId: aId }, select: { fromId: true } }),
+    db.relation.findMany({ where: { type: 'PARENT', toId: bId }, select: { fromId: true } }),
+  ]);
+  if (pa.length && pb.length) {
+    const same = pa.every((x) => pb.some((y) => y.fromId === x.fromId)) && pa.length === pb.length;
+    return same ? 'Они уже брат и сестра по общим родителям' : 'У обоих уже указаны родители. Исправьте родителей в карточке человека.';
+  }
+  if (!pa.length && !pb.length) {
+    const exists = await db.relation.findFirst({ where: { type: 'SIBLING', OR: [{ fromId: aId, toId: bId }, { fromId: bId, toId: aId }] } });
+    if (exists) return 'Связь уже есть';
+    await db.relation.create({ data: { familyId, type: 'SIBLING', fromId: aId, toId: bId } });
+    return null;
+  }
+  const [known, target] = pa.length ? [pa, bId] : [pb, aId];
+  for (const { fromId } of known) {
+    if (fromId === target || (await isAncestor(target, fromId))) return 'Такая связь создаст цикл в дереве';
+  }
+  for (const { fromId } of known) {
+    await db.relation.create({ data: { familyId, type: 'PARENT', fromId, toId: target } }).catch(() => null);
+    await adoptSiblingGroup(familyId, target, fromId);
+  }
+  return null;
 }
 
 /** Братья и сёстры с неизвестными родителями получают найденного родителя вместе; связь «без родителей» больше не нужна. */

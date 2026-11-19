@@ -39,7 +39,8 @@ export function TreeBackdrop() {
       const x = 500 + Math.cos(t) * 390 * d;
       const y = 290 + Math.sin(t) * 220 * d;
       if (y > 440) continue;
-      out.push({ x, y, rx: 7 + r() * 9, ry: 3 + r() * 4, a: r() * 180, o: 0.35 + d * 0.65 });
+      const q = (v: number) => Math.round(v * 10) / 10;
+      out.push({ x: q(x), y: q(y), rx: q(7 + r() * 9), ry: q(3 + r() * 4), a: q(r() * 180), o: q(0.35 + d * 0.65) });
     }
     return out;
   }, []);

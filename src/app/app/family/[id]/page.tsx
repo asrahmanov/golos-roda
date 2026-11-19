@@ -15,7 +15,7 @@ export default async function FamilyTreePage({ params, searchParams }: { params:
       include: { _count: { select: { materials: true } } },
       orderBy: { createdAt: 'asc' },
     }),
-    db.relation.findMany({ where: { familyId: id }, select: { type: true, fromId: true, toId: true } }),
+    db.relation.findMany({ where: { familyId: id }, select: { id: true, type: true, fromId: true, toId: true } }),
   ]);
   const editable = canEdit(role);
 
@@ -29,9 +29,14 @@ export default async function FamilyTreePage({ params, searchParams }: { params:
           <h2 className="mt-6 font-serif text-3xl font-semibold">Дерево пока пустое</h2>
           <p className="mt-3 text-ink-600">Начните с себя или со старшего родственника, о котором знаете больше всего.</p>
           {editable && (
-            <Link href={`/app/family/${id}/person/new?me=1`} className="btn-gold mt-8">
-              <UserPlus className="h-4 w-4" /> Добавить первого человека
-            </Link>
+            <div className="mt-8 flex flex-col items-center gap-4">
+              <Link href={`/app/family/${id}/person/new?me=1`} className="btn-gold">
+                <UserPlus className="h-4 w-4" /> Добавить первого человека
+              </Link>
+              <Link href={`/app/import?target=${id}`} className="text-sm font-semibold text-gold-700 hover:underline">
+                или загрузить дерево из файла
+              </Link>
+            </div>
           )}
         </div>
       </div>

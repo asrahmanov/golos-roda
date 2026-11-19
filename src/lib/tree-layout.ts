@@ -1,16 +1,21 @@
 export type Gender = 'MALE' | 'FEMALE' | 'UNKNOWN';
 export type TreePerson = { id: string; gender?: Gender; birthDate?: string | null };
-export type TreeRelation = { type: 'PARENT' | 'SPOUSE' | 'SIBLING'; fromId: string; toId: string };
+export type TreeRelation = { id?: string; type: 'PARENT' | 'SPOUSE' | 'SIBLING'; fromId: string; toId: string };
 
 export const CARD_W = 188;
 export const CARD_H = 92;
 const GAP_X = 44;
-const GAP_COUPLE = 26;
+const GAP_COUPLE = 64;
 const GAP_Y = 124;
 const TOP = 36;
+const LANE = 12;
 
 export type Placed = { id: string; x: number; y: number; gen: number };
 export type Edge = { d: string; kind: 'child' | 'spouse' | 'sibling' };
+export type EdgeLabel = { x: number; y: number; text: string; kind: Edge['kind'] };
+
+const CHILD_LABEL: Record<Gender, string> = { MALE: 'сын', FEMALE: 'дочь', UNKNOWN: 'ребёнок' };
+const SIBLING_LABEL: Record<Gender, string> = { MALE: 'брат', FEMALE: 'сестра', UNKNOWN: 'брат / сестра' };
 
 const SEX_RANK: Record<Gender, number> = { FEMALE: 0, UNKNOWN: 1, MALE: 2 };
 const COUPLE_RANK: Record<Gender, number> = { MALE: 0, UNKNOWN: 1, FEMALE: 2 };
@@ -22,9 +27,11 @@ const yearOf = (s?: string | null) => {
 /**
  * Раскладка родового дерева:
  * - поколения строго на одном уровне;
- * - в паре мужчина слева, женщина справа;
+ * - в паре мужчина слева, женщина справа; при двух браках человек стоит между супругами;
  * - дети: дочери слева, сыновья справа — супруги детей уходят наружу ветки;
- * - предки мужа строятся над ним влево, предки жены — вправо; при нехватке места ветки раздвигаются.
+ * - дети каждого брака — отдельной группой под своей парой;
+ * - предки мужа строятся над ним влево, предки жены — вправо; при нехватке места ветки раздвигаются;
+ * - порядок ячеек в рядах подбирается так, чтобы линии родства не пересекались.
  */
 export function layoutTree(persons: TreePerson[], relations: TreeRelation[], rootId?: string | null) {
   const ids = persons.map((p) => p.id);
@@ -104,6 +111,9 @@ export function layoutTree(persons: TreePerson[], relations: TreeRelation[], roo
     if (ms.length > 2) {
       const hub = [...ms].sort((a, b) => partner.get(b)!.size - partner.get(a)!.size)[0];
       const rest = ms.filter((m) => m !== hub);
+      if (rest.length === 2 && partner.get(hub)!.size === 2) {
+        return sex.get(hub) === 'FEMALE' ? [rest[0], hub, rest[1]] : [rest[1], hub, rest[0]];
+      }
       if (sex.get(hub) === 'MALE') return [hub, ...rest];
       if (sex.get(hub) === 'FEMALE') return [...rest, hub];
       const half = Math.ceil(rest.length / 2);
@@ -135,8 +145,16 @@ export function layoutTree(persons: TreePerson[], relations: TreeRelation[], roo
     if (!otherFamily) return 0;
     return ms.indexOf(kid) === 0 ? 1 : -1;
   };
+  /** Для ячейки из нескольких браков: дети левой пары идут левее детей правой */
+  const pairRank = (kid: string, u: number) => {
+    const ms = units[u].members;
+    if (ms.length < 3) return 0;
+    const idx = parents.get(kid)!.map((p) => ms.indexOf(p)).filter((i) => i >= 0);
+    return idx.reduce((s, i) => s + i, 0) / Math.max(1, idx.length);
+  };
   const downUnits = (u: number) => {
     const childSort = (a: string, b: string) =>
+      pairRank(a, u) - pairRank(b, u) ||
       junctionSide(a, u) - junctionSide(b, u) ||
       SEX_RANK[sex.get(a)!] - SEX_RANK[sex.get(b)!] ||
       born.get(a)! - born.get(b)! ||
@@ -291,13 +309,29 @@ export function layoutTree(persons: TreePerson[], relations: TreeRelation[], roo
     }
   };
 
+  /** Из двух родителей, стоящих не рядом (третий брак и т.п.), линия к детям идёт от матери — того, у кого меньше браков */
+  const motherOf = (a: string, b: string) =>
+    partner.get(a)!.size !== partner.get(b)!.size
+      ? partner.get(a)!.size < partner.get(b)!.size ? a : b
+      : sex.get(a) === 'FEMALE' ? a : b;
+  const parentsAdjacent = (a: string, b: string) => {
+    const ua = unitOf.get(a)!;
+    if (ua !== unitOf.get(b)) return true;
+    const ms = units[ua].members;
+    return Math.abs(ms.indexOf(a) - ms.indexOf(b)) === 1;
+  };
+  const anchorX = (ps: string[]) => {
+    if (ps.length < 2) return center(ps[0]);
+    const [a, b] = ps;
+    return parentsAdjacent(a, b) ? (center(a) + center(b)) / 2 : center(motherOf(a, b));
+  };
+
   const fromParents = (u: number) => {
     const wants: number[] = [];
     for (const m of units[u].members) {
-      const ps = parents.get(m)!;
+      const ps = parents.get(m)!.slice(0, 2);
       if (!ps.length) continue;
-      const anchor = ps.reduce((s, p) => s + center(p), 0) / ps.length;
-      wants.push(anchor - memberShift(u, m));
+      wants.push(anchorX(ps) - memberShift(u, m));
     }
     return wants.length ? { c: wants.reduce((s, v) => s + v, 0) / wants.length, w: wants.length } : { c: ux.get(u)!, w: 0.05 };
   };
@@ -309,10 +343,135 @@ export function layoutTree(persons: TreePerson[], relations: TreeRelation[], roo
     return { c: (lo + hi) / 2, w: 1 };
   };
 
-  for (let iter = 0; iter < 10; iter++) {
-    for (let g = maxGen - 1; g >= 0; g--) placeRow(rows[g], fromChildren);
-    for (let g = 1; g <= maxGen; g++) placeRow(rows[g], fromParents);
+  const placeAll = (iters: number) => {
+    for (let iter = 0; iter < iters; iter++) {
+      for (let g = maxGen - 1; g >= 0; g--) placeRow(rows[g], fromChildren);
+      for (let g = 1; g <= maxGen; g++) placeRow(rows[g], fromParents);
+    }
+  };
+
+  // 5. Порядок в рядах: убираем пересечения линий «родители → дети» (барицентры + перестановки соседей)
+  const slot = new Map<string, number>();
+  const indexRow = (row: number[]) => {
+    let i = 0;
+    for (const u of row) for (const m of units[u].members) slot.set(m, i++);
+  };
+  const rowEdges: { kid: string; ps: string[] }[][] = rows.map(() => []);
+  for (const id of ids) {
+    const ps = parents.get(id)!.slice(0, 2).filter((p) => gen.get(p) === gen.get(id)! - 1);
+    if (ps.length) rowEdges[gen.get(id)!].push({ kid: id, ps });
   }
+  const crossAt = (g: number) => {
+    if (g < 1 || g > maxGen) return 0;
+    const es = rowEdges[g].map((e) => [e.ps.reduce((s, p) => s + slot.get(p)!, 0) / e.ps.length, slot.get(e.kid)!]);
+    let c = 0;
+    for (let i = 0; i < es.length; i++)
+      for (let j = i + 1; j < es.length; j++) if ((es[i][0] - es[j][0]) * (es[i][1] - es[j][1]) < 0) c++;
+    return c;
+  };
+  const totalCross = () => {
+    rows.forEach(indexRow);
+    let c = 0;
+    for (let g = 1; g <= maxGen; g++) c += crossAt(g);
+    return c;
+  };
+  const reorder = (g: number, key: (u: number) => { c: number; w: number }) => {
+    const cur = new Map(rows[g].map((u, i) => [u, i]));
+    const k = new Map(rows[g].map((u) => {
+      const d = key(u);
+      return [u, d.w > 0.05 ? d.c : ux.get(u)!];
+    }));
+    rows[g].sort((a, b) => k.get(a)! - k.get(b)! || cur.get(a)! - cur.get(b)!);
+  };
+  const improveRow = (g: number) => {
+    const row = rows[g];
+    for (let pass = 0; pass < 6; pass++) {
+      let improved = false;
+      for (let i = 0; i + 1 < row.length; i++) {
+        indexRow(row);
+        const before = crossAt(g) + crossAt(g + 1);
+        [row[i], row[i + 1]] = [row[i + 1], row[i]];
+        indexRow(row);
+        if (crossAt(g) + crossAt(g + 1) < before) improved = true;
+        else [row[i], row[i + 1]] = [row[i + 1], row[i]];
+      }
+      if (!improved) break;
+    }
+    indexRow(row);
+  };
+
+  /** Пересортировка ряда по соседнему ряду; ячейки без связей с ним остаются на своих местах */
+  const baryResort = (r: number, dir: 'down' | 'up') => {
+    if (r < 0 || r > maxGen) return;
+    const row = rows[r];
+    const key = (u: number) => {
+      const vals: number[] = [];
+      for (const m of units[u].members) {
+        if (dir === 'down') {
+          const ps = parents.get(m)!.slice(0, 2).filter((p) => gen.get(p) === r - 1);
+          if (ps.length) vals.push(ps.reduce((s, p) => s + slot.get(p)!, 0) / ps.length);
+        } else {
+          for (const k of children.get(m)!) if (gen.get(k) === r + 1) vals.push(slot.get(k)!);
+        }
+      }
+      return vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : null;
+    };
+    const keyed = row.map((u, i) => ({ u, i, k: key(u) })).filter((x) => x.k !== null) as { u: number; i: number; k: number }[];
+    const sorted = [...keyed].sort((a, b) => a.k - b.k || a.i - b.i);
+    keyed.forEach((x, j) => (row[x.i] = sorted[j].u));
+    indexRow(row);
+  };
+  const localCross = (g: number) => crossAt(g - 1) + crossAt(g) + crossAt(g + 1) + crossAt(g + 2);
+  /** Перенос ячейки на любое место ряда с подстройкой соседних рядов */
+  const sift = (g: number) => {
+    for (const u of [...rows[g]]) {
+      const span = [g - 1, g, g + 1].filter((r) => r >= 0 && r <= maxGen);
+      const snap = () => span.map((r) => [...rows[r]]);
+      const restore = (s: number[][]) => span.forEach((r, i) => { rows[r] = [...s[i]]; indexRow(rows[r]); });
+      const start = snap();
+      let bestC = localCross(g);
+      let bestS = start;
+      const without = rows[g].filter((x) => x !== u);
+      for (let p = 0; p <= without.length; p++) {
+        restore(start);
+        rows[g] = [...without.slice(0, p), u, ...without.slice(p)];
+        indexRow(rows[g]);
+        baryResort(g + 1, 'down');
+        baryResort(g - 1, 'up');
+        const c = localCross(g);
+        if (c < bestC) {
+          bestC = c;
+          bestS = snap();
+        }
+      }
+      restore(bestS);
+    }
+  };
+
+  placeAll(6);
+  let best = { c: totalCross(), rows: rows.map((r) => [...r]), ux: new Map(ux) };
+  const small = ids.length <= 400;
+  for (let it = 0; it < 8 && best.c > 0; it++) {
+    for (let g = 1; g <= maxGen; g++) {
+      reorder(g, fromParents);
+      placeRow(rows[g], fromParents);
+    }
+    for (let g = maxGen - 1; g >= 0; g--) {
+      reorder(g, fromChildren);
+      placeRow(rows[g], fromChildren);
+    }
+    if (small) {
+      rows.forEach(indexRow);
+      for (let g = 0; g <= maxGen; g++) improveRow(g);
+      if (ids.length <= 200) for (let g = 0; g <= maxGen; g++) sift(g);
+    }
+    placeAll(3);
+    const c = totalCross();
+    if (c < best.c) best = { c, rows: rows.map((r) => [...r]), ux: new Map(ux) };
+  }
+  best.rows.forEach((r, g) => (rows[g] = r));
+  for (const [u, x] of best.ux) ux.set(u, x);
+  placeAll(10);
 
   const xs = new Map<string, number>();
   for (const id of ids) xs.set(id, center(id) - CARD_W / 2);
@@ -326,8 +485,9 @@ export function layoutTree(persons: TreePerson[], relations: TreeRelation[], roo
   const pos = new Map(placed.map((p) => [p.id, p]));
   const adjacent = (a: Placed, b: Placed) => a.y === b.y && Math.abs(Math.abs(b.x - a.x) - CARD_W - GAP_COUPLE) < 1;
 
-  // 5. Линии
+  // 6. Линии и подписи
   const edges: Edge[] = [];
+  const labels: EdgeLabel[] = [];
   const drawn = new Set<string>();
   for (const id of ids) {
     for (const s of spouses.get(id)!) {
@@ -338,43 +498,77 @@ export function layoutTree(persons: TreePerson[], relations: TreeRelation[], roo
       const b = pos.get(s)!;
       const [l, r] = a.x < b.x ? [a, b] : [b, a];
       if (adjacent(l, r)) {
-        edges.push({ kind: 'spouse', d: `M ${l.x + CARD_W} ${l.y + CARD_H / 2} H ${r.x}` });
+        const y = l.y + CARD_H / 2;
+        edges.push({ kind: 'spouse', d: `M ${l.x + CARD_W} ${y} H ${r.x}` });
+        labels.push({ kind: 'spouse', x: l.x + CARD_W + GAP_COUPLE / 2, y: y - 12, text: 'супруги' });
       } else {
-        const top = Math.min(l.y, r.y) - 26;
-        edges.push({ kind: 'spouse', d: `M ${l.x + CARD_W / 2} ${l.y} C ${l.x + CARD_W / 2} ${top}, ${r.x + CARD_W / 2} ${top}, ${r.x + CARD_W / 2} ${r.y}` });
+        const top = Math.min(l.y, r.y) - 30;
+        const x1 = l.x + CARD_W / 2;
+        const x2 = r.x + CARD_W / 2;
+        edges.push({ kind: 'spouse', d: `M ${x1} ${l.y} C ${x1} ${top}, ${x2} ${top}, ${x2} ${r.y}` });
+        labels.push({ kind: 'spouse', x: (x1 + x2) / 2, y: (l.y + r.y) / 8 + (top * 3) / 4, text: 'супруги' });
       }
     }
   }
 
   const groups = new Map<string, string[]>();
   for (const id of ids) {
-    const ps = parents.get(id)!;
+    const ps = parents.get(id)!.slice(0, 2);
     if (!ps.length) continue;
     const key = [...ps].sort().join('|');
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key)!.push(id);
   }
+  type Bus = { ax: number; ay: number; kids: Placed[]; lo: number; hi: number; top: number; lane: number };
+  const buses: Bus[] = [];
   for (const [key, kids] of groups) {
-    const ps = key.split('|').map((p) => pos.get(p)!);
+    const pids = key.split('|');
+    const ps = pids.map((p) => pos.get(p)!);
     let ax: number;
     let ay: number;
     if (ps.length >= 2) {
       const [l, r] = ps[0].x < ps[1].x ? [ps[0], ps[1]] : [ps[1], ps[0]];
-      const adj = adjacent(l, r);
-      ax = adj ? l.x + CARD_W + GAP_COUPLE / 2 : (l.x + r.x + CARD_W) / 2;
-      ay = adj ? l.y + CARD_H / 2 : Math.max(l.y, r.y) + CARD_H;
+      if (adjacent(l, r)) {
+        ax = l.x + CARD_W + GAP_COUPLE / 2;
+        ay = l.y + CARD_H / 2;
+      } else if (l.y === r.y && !parentsAdjacent(pids[0], pids[1])) {
+        const m = pos.get(motherOf(pids[0], pids[1]))!;
+        ax = m.x + CARD_W / 2;
+        ay = m.y + CARD_H;
+      } else {
+        ax = (l.x + r.x + CARD_W) / 2;
+        ay = Math.max(l.y, r.y) + CARD_H;
+      }
     } else {
       ax = ps[0].x + CARD_W / 2;
       ay = ps[0].y + CARD_H;
     }
     const kidPos = kids.map((k) => pos.get(k)!);
-    const busY = Math.min(...kidPos.map((k) => k.y)) - GAP_Y / 2;
     const kx = kidPos.map((k) => k.x + CARD_W / 2);
-    const lo = Math.min(ax, ...kx);
-    const hi = Math.max(ax, ...kx);
-    let d = `M ${ax} ${ay} V ${busY}`;
-    if (hi - lo > 0.5) d += ` M ${lo} ${busY} H ${hi}`;
-    for (const k of kidPos) d += ` M ${k.x + CARD_W / 2} ${busY} V ${k.y}`;
+    buses.push({ ax, ay, kids: kidPos, lo: Math.min(ax, ...kx), hi: Math.max(ax, ...kx), top: Math.min(...kidPos.map((k) => k.y)), lane: 0 });
+  }
+  // Шины соседних семей, которые перекрываются по горизонтали, разводим по разным уровням, чтобы они не сливались
+  const laneCount = new Map<number, number>();
+  for (const top of new Set(buses.map((b) => b.top))) {
+    const row = buses.filter((b) => b.top === top).sort((a, b) => a.lo - b.lo);
+    const ends: number[] = [];
+    for (const b of row) {
+      let lane = ends.findIndex((e) => e < b.lo - 18);
+      if (lane < 0) lane = ends.push(0) - 1;
+      ends[lane] = b.hi;
+      b.lane = lane;
+    }
+    laneCount.set(top, ends.length);
+  }
+  for (const b of buses) {
+    const n = laneCount.get(b.top)!;
+    const busY = b.top - GAP_Y / 2 + (b.lane - (n - 1) / 2) * LANE;
+    let d = `M ${b.ax} ${b.ay} V ${busY}`;
+    if (b.hi - b.lo > 0.5) d += ` M ${b.lo} ${busY} H ${b.hi}`;
+    for (const k of b.kids) {
+      d += ` M ${k.x + CARD_W / 2} ${busY} V ${k.y}`;
+      labels.push({ kind: 'child', x: k.x + CARD_W / 2, y: k.y - 22, text: CHILD_LABEL[sex.get(k.id)!] });
+    }
     edges.push({ kind: 'child', d });
   }
 
@@ -391,14 +585,17 @@ export function layoutTree(persons: TreePerson[], relations: TreeRelation[], roo
       for (const s of sibs.get(cur)!) if (!seenSib.has(s)) { seenSib.add(s); stack.push(s); }
     }
     const gp = group.map((g) => pos.get(g)!);
-    const yTop = Math.min(...gp.map((p) => p.y)) - 26;
+    const yTop = Math.min(...gp.map((p) => p.y)) - 34;
     const gx = gp.map((p) => p.x + CARD_W / 2);
     let d = `M ${Math.min(...gx)} ${yTop} H ${Math.max(...gx)}`;
-    for (const p of gp) d += ` M ${p.x + CARD_W / 2} ${yTop} V ${p.y}`;
+    for (const p of gp) {
+      d += ` M ${p.x + CARD_W / 2} ${yTop} V ${p.y}`;
+      labels.push({ kind: 'sibling', x: p.x + CARD_W / 2, y: p.y - 14, text: SIBLING_LABEL[sex.get(p.id)!] });
+    }
     edges.push({ kind: 'sibling', d });
   }
 
   const width = Math.max(CARD_W, ...placed.map((p) => p.x + CARD_W));
   const height = Math.max(CARD_H, ...placed.map((p) => p.y + CARD_H));
-  return { placed, edges, width, height };
+  return { placed, edges, labels, width, height };
 }

@@ -1,12 +1,14 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Crosshair, Info, Maximize2, Minus, Plus, X, ArrowUpRight, Search } from 'lucide-react';
+import { Crosshair, Info, Maximize2, Minus, Plus, X, ArrowUpRight, Search, Tags, Link2, Trash2, Unlink, Loader2, ChevronDown } from 'lucide-react';
 import { CARD_H, CARD_W, layoutTree, type TreeRelation } from '@/lib/tree-layout';
 import { cn, initials, lifeYears } from '@/lib/utils';
+import { deletePersonAction, removeRelationAction } from '@/actions/family';
 import { TreeBackdrop } from './TreeBackdrop';
+import { AddRelationForm } from './PersonWidgets';
 
 export type TreeNode = {
   id: string;
@@ -44,6 +46,17 @@ export function FamilyTree({
   const [selected, setSelected] = useState<string | null>(null);
   const [hints, setHints] = useState(false);
   const [query, setQuery] = useState('');
+  const [showLabels, setShowLabels] = useState(true);
+  const [relOpen, setRelOpen] = useState(false);
+  const [confirm, setConfirm] = useState<Confirm | null>(null);
+  useEffect(() => {
+    if (localStorage.getItem('tree-labels') === '0') setShowLabels(false);
+  }, []);
+  const toggleLabels = () =>
+    setShowLabels((v) => {
+      localStorage.setItem('tree-labels', v ? '0' : '1');
+      return !v;
+    });
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const downNode = useRef<string | null>(null);
   const drag = useRef<{ x: number; y: number; vx: number; vy: number; moved: boolean; pinch?: { d: number; k: number; cx: number; cy: number } } | null>(null);
@@ -212,6 +225,25 @@ export function FamilyTree({
               />
             ))}
           </svg>
+          {showLabels && view.k >= 0.45 && (
+            <div className="pointer-events-none absolute inset-0" aria-hidden>
+              {layout.labels.map((l, i) => (
+                <motion.span
+                  key={`${l.kind}${l.x}:${l.y}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.5 + Math.min(i, 30) * 0.015 }}
+                  className={cn(
+                    'absolute -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full px-1.5 py-px text-[10px] font-semibold leading-[1.35] ring-1',
+                    l.kind === 'spouse' ? 'bg-cream-50 text-gold-700 ring-gold-500/35' : 'bg-cream-50/95 text-ink-500 ring-ink-900/10',
+                  )}
+                  style={{ left: l.x, top: l.y }}
+                >
+                  {l.text}
+                </motion.span>
+              ))}
+            </div>
+          )}
           {layout.placed.map((n, i) => {
             const p = byId.get(n.id)!;
             const me = n.id === meId;
@@ -303,8 +335,19 @@ export function FamilyTree({
           { I: Minus, f: () => zoom(0.8), l: 'Отдалить' },
           { I: Maximize2, f: fit, l: 'Показать всё дерево' },
           ...(meId ? [{ I: Crosshair, f: () => focus(meId, 1), l: 'Найти меня' }] : []),
+          { I: Tags, f: toggleLabels, l: showLabels ? 'Скрыть подписи связей' : 'Показать подписи связей', on: showLabels },
         ].map((b) => (
-          <button key={b.l} onClick={b.f} title={b.l} aria-label={b.l} className="grid h-11 w-11 place-items-center rounded-full bg-white text-ink-700 shadow-lg ring-1 ring-ink-900/8 transition hover:bg-ink-900 hover:text-gold-300">
+          <button
+            key={b.l}
+            onClick={b.f}
+            title={b.l}
+            aria-label={b.l}
+            aria-pressed={'on' in b ? b.on : undefined}
+            className={cn(
+              'grid h-11 w-11 place-items-center rounded-full shadow-lg ring-1 ring-ink-900/8 transition hover:bg-ink-900 hover:text-gold-300',
+              'on' in b && b.on ? 'bg-ink-900 text-gold-300' : 'bg-white text-ink-700',
+            )}
+          >
             <b.I className="h-4 w-4" />
           </button>
         ))}
@@ -322,9 +365,9 @@ export function FamilyTree({
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 40 }}
             transition={{ type: 'spring', stiffness: 260, damping: 26 }}
-            className="absolute inset-x-3 bottom-3 z-40 rounded-3xl bg-white p-3 shadow-2xl sm:p-5 ring-1 ring-ink-900/10 sm:inset-x-auto sm:bottom-auto sm:right-4 sm:top-4 sm:w-80"
+            className="absolute inset-x-3 bottom-3 z-40 max-h-[70%] overflow-y-auto overscroll-contain rounded-3xl bg-white p-3 shadow-2xl ring-1 ring-ink-900/10 sm:inset-x-auto sm:bottom-auto sm:right-4 sm:top-4 sm:max-h-[calc(100%-2rem)] sm:w-80 sm:p-5"
           >
-            <button onClick={() => setSelected(null)} className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full p-2 text-ink-400 hover:bg-cream-100 sm:right-3 sm:top-3 sm:translate-y-0" aria-label="Закрыть">
+            <button onClick={() => setSelected(null)} className="absolute right-2 top-[18px] rounded-full p-2 text-ink-400 hover:bg-cream-100 sm:right-3 sm:top-3" aria-label="Закрыть">
               <X className="h-4 w-4" />
             </button>
             <div className="hidden items-center gap-4 sm:flex">
@@ -347,6 +390,69 @@ export function FamilyTree({
             <Link href={`/app/family/${familyId}/person/${sel.id}`} className="btn-gold w-[calc(100%-2.5rem)] whitespace-nowrap sm:mt-5 sm:w-full">
               <span className="truncate sm:hidden">{sel.firstName} {sel.lastName} ·</span> Открыть карточку <ArrowUpRight className="h-4 w-4 shrink-0" />
             </Link>
+            <div className={cn('mt-2 grid gap-2', canEdit ? 'grid-cols-2' : 'grid-cols-1')}>
+              <button
+                type="button"
+                onClick={() => setRelOpen((o) => !o)}
+                aria-expanded={relOpen}
+                className="inline-flex items-center justify-center gap-1.5 rounded-full border border-ink-900/12 px-3 py-2 text-xs font-semibold text-ink-700 transition hover:border-gold-500 hover:bg-gold-500/10"
+              >
+                <Link2 className="h-3.5 w-3.5" /> Связи
+                <ChevronDown className={cn('h-3.5 w-3.5 transition', relOpen && 'rotate-180')} />
+              </button>
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    setConfirm({
+                      title: 'Вы действительно хотите удалить карточку?',
+                      text: `${fullName(sel)} будет удалён(а) из дерева вместе со всеми связями. Материалы останутся в архиве семьи.`,
+                      action: 'Удалить',
+                      run: async () => {
+                        const fd = new FormData();
+                        fd.set('id', sel.id);
+                        fd.set('stay', '1');
+                        await deletePersonAction(fd);
+                        setSelected(null);
+                      },
+                    })
+                  }
+                  className="inline-flex items-center justify-center gap-1.5 rounded-full border border-rose-500/25 px-3 py-2 text-xs font-semibold text-rose-500 transition hover:bg-rose-500/10"
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> Удалить
+                </button>
+              )}
+            </div>
+            <AnimatePresence initial={false}>
+              {relOpen && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                  <RelationsEditor
+                    key={sel.id}
+                    person={sel}
+                    persons={persons}
+                    relations={relations}
+                    byId={byId}
+                    canEdit={canEdit}
+                    onPick={(id) => {
+                      setSelected(id);
+                      focus(id, Math.max(view.k, 0.8));
+                    }}
+                    onUnlink={(relId, other, label) =>
+                      setConfirm({
+                        title: 'Убрать связь?',
+                        text: `${fullName(other)} перестанет быть отмечен(а) как ${label} для ${fullName(sel)}. Сами карточки останутся.`,
+                        action: 'Убрать связь',
+                        run: async () => {
+                          const fd = new FormData();
+                          fd.set('id', relId);
+                          await removeRelationAction(fd);
+                        },
+                      })
+                    }
+                  />
+                </motion.div>
+              )}
+            </AnimatePresence>
             {canEdit && (
               <p className="mt-4 hidden items-start gap-2 text-xs leading-relaxed text-ink-500 sm:flex">
                 <Plus className="mt-0.5 h-3.5 w-3.5 shrink-0 text-gold-600" />
@@ -356,6 +462,166 @@ export function FamilyTree({
           </motion.aside>
         )}
       </AnimatePresence>
+
+      <AnimatePresence>{confirm && <ConfirmDialog key="confirm" c={confirm} onClose={() => setConfirm(null)} />}</AnimatePresence>
+    </div>
+  );
+}
+
+type Confirm = { title: string; text: string; action: string; run: () => Promise<void> };
+
+const fullName = (p: Pick<TreeNode, 'firstName' | 'lastName'>) => `${p.firstName} ${p.lastName ?? ''}`.trim();
+
+function ConfirmDialog({ c, onClose }: { c: Confirm; onClose: () => void }) {
+  const [pending, start] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && !pending && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose, pending]);
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="absolute inset-0 z-50 grid place-items-center bg-ink-950/45 p-4 backdrop-blur-[2px]"
+      onClick={() => !pending && onClose()}
+    >
+      <motion.div
+        role="alertdialog"
+        aria-modal="true"
+        aria-labelledby="confirm-title"
+        initial={{ scale: 0.92, y: 12 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 26 }}
+        className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl ring-1 ring-ink-900/10"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 id="confirm-title" className="font-serif text-xl font-semibold leading-tight">{c.title}</h3>
+        <p className="mt-3 text-sm leading-relaxed text-ink-600">{c.text}</p>
+        {error && <p className="mt-3 rounded-2xl bg-rose-500/10 px-4 py-2.5 text-sm text-rose-500">{error}</p>}
+        <div className="mt-6 grid grid-cols-2 gap-2">
+          <button type="button" autoFocus disabled={pending} onClick={onClose} className="btn btn-sm border border-ink-900/12 text-ink-700 hover:bg-cream-100">
+            Отмена
+          </button>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() =>
+              start(async () => {
+                try {
+                  await c.run();
+                  onClose();
+                } catch (e) {
+                  setError(e instanceof Error ? e.message : 'Не получилось. Попробуйте ещё раз.');
+                }
+              })
+            }
+            className="btn btn-sm bg-rose-500 text-white hover:bg-rose-500/90"
+          >
+            {pending ? <Loader2 className="h-4 w-4 animate-spin" /> : c.action}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+const REL_LABEL = {
+  parent: { MALE: 'папа', FEMALE: 'мама', UNKNOWN: 'родитель' },
+  spouse: { MALE: 'муж', FEMALE: 'жена', UNKNOWN: 'супруг(а)' },
+  sibling: { MALE: 'брат', FEMALE: 'сестра', UNKNOWN: 'брат / сестра' },
+  child: { MALE: 'сын', FEMALE: 'дочь', UNKNOWN: 'ребёнок' },
+} as const;
+
+function RelationsEditor({
+  person,
+  persons,
+  relations,
+  byId,
+  canEdit,
+  onPick,
+  onUnlink,
+}: {
+  person: TreeNode;
+  persons: TreeNode[];
+  relations: TreeRelation[];
+  byId: Map<string, TreeNode>;
+  canEdit: boolean;
+  onPick: (id: string) => void;
+  onUnlink: (relId: string, other: TreeNode, label: string) => void;
+}) {
+  const id = person.id;
+  const items: { p: TreeNode; kind: keyof typeof REL_LABEL; relId?: string }[] = [];
+  const parentIds = new Set<string>();
+  for (const r of relations) {
+    const other = byId.get(r.fromId === id ? r.toId : r.fromId);
+    if (!other || (r.fromId !== id && r.toId !== id)) continue;
+    if (r.type === 'PARENT' && r.toId === id) {
+      parentIds.add(other.id);
+      items.push({ p: other, kind: 'parent', relId: r.id });
+    } else if (r.type === 'PARENT') items.push({ p: other, kind: 'child', relId: r.id });
+    else if (r.type === 'SPOUSE') items.push({ p: other, kind: 'spouse', relId: r.id });
+    else items.push({ p: other, kind: 'sibling', relId: r.id });
+  }
+  const viaParents = new Set<string>();
+  for (const r of relations) if (r.type === 'PARENT' && parentIds.has(r.fromId) && r.toId !== id) viaParents.add(r.toId);
+  for (const sid of viaParents) {
+    const p = byId.get(sid);
+    if (p && !items.some((x) => x.p.id === sid && x.kind === 'sibling')) items.push({ p, kind: 'sibling' });
+  }
+  const order = ['parent', 'spouse', 'sibling', 'child'];
+  items.sort((a, b) => order.indexOf(a.kind) - order.indexOf(b.kind));
+  const options = persons
+    .filter((p) => p.id !== id)
+    .map((p) => ({ id: p.id, name: `${fullName(p)}${lifeYears(p) ? ` (${lifeYears(p)})` : ''}` }))
+    .sort((a, b) => a.name.localeCompare(b.name, 'ru'));
+
+  return (
+    <div className="pt-4">
+      <div className="space-y-0.5">
+        {items.map(({ p, kind, relId }) => {
+          const label = REL_LABEL[kind][p.gender];
+          return (
+            <div key={`${kind}${p.id}`} className="group flex items-center gap-2 rounded-2xl p-1.5 transition hover:bg-cream-100">
+              <button type="button" onClick={() => onPick(p.id)} className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
+                <span className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-full bg-cream-200 text-[11px] font-semibold text-ink-500">
+                  {p.avatar ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={p.avatar} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    initials(fullName(p))
+                  )}
+                </span>
+                <span className="min-w-0 leading-tight">
+                  <span className="block truncate text-sm font-semibold">{fullName(p)}</span>
+                  <span className="block text-[11px] text-ink-400">{label}{!relId && kind === 'sibling' ? ' · по общим родителям' : ''}</span>
+                </span>
+              </button>
+              {canEdit && relId && (
+                <button
+                  type="button"
+                  onClick={() => onUnlink(relId, p, label)}
+                  title="Убрать связь"
+                  aria-label={`Убрать связь: ${fullName(p)}`}
+                  className="rounded-full p-2 text-ink-300 transition hover:bg-rose-500/10 hover:text-rose-500"
+                >
+                  <Unlink className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          );
+        })}
+        {!items.length && <p className="px-1.5 text-sm text-ink-400">Связи ещё не указаны.</p>}
+      </div>
+      {canEdit && options.length > 0 && (
+        <div className="mt-4 border-t border-ink-900/8 pt-4">
+          <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-ink-400">Связать с уже добавленным</p>
+          <AddRelationForm personId={id} options={options} stacked />
+        </div>
+      )}
     </div>
   );
 }

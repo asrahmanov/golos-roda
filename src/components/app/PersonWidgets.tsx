@@ -49,17 +49,18 @@ export function AvatarUpload({ familyId, personId, src, name, canEdit }: { famil
   );
 }
 
-export function AddRelationForm({ personId, options }: { personId: string; options: { id: string; name: string }[] }) {
+export function AddRelationForm({ personId, options, stacked }: { personId: string; options: { id: string; name: string }[]; stacked?: boolean }) {
   const [state, action] = useActionState(addRelationAction, undefined);
   if (!options.length) return null;
   return (
     <form action={action} className="grid gap-3">
       <input type="hidden" name="personId" value={personId} />
-      <div className="grid gap-2 sm:grid-cols-[auto_1fr]">
+      <div className={stacked ? 'grid gap-2' : 'grid gap-2 sm:grid-cols-[auto_1fr]'}>
         <select name="kind" className="input py-2.5 text-sm">
           <option value="parent">Родитель —</option>
           <option value="child">Ребёнок —</option>
           <option value="spouse">Супруг(а) —</option>
+          <option value="sibling">Брат / сестра —</option>
         </select>
         <select name="otherId" className="input py-2.5 text-sm" required>
           <option value="">выберите из дерева</option>

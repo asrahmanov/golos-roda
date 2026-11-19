@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, BookHeart, Images, PartyPopper, Plus, TreePine, Users } from 'lucide-react';
+import { ArrowRight, BookHeart, Images, PartyPopper, Plus, TreePine, UploadCloud, Users } from 'lucide-react';
 import { db } from '@/lib/db';
 import { requireUser } from '@/lib/auth';
 import { ROLE_LABEL } from '@/lib/family';
@@ -48,6 +48,10 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
         <div className="mt-10 grid gap-8 lg:grid-cols-[1.3fr_1fr]">
           <Reveal className="card p-6 sm:p-10">
             <CreateFamilyForm defaultLastName={lastName} />
+            <p className="mt-6 border-t border-ink-900/8 pt-5 text-sm text-ink-500">
+              Есть архив семьи или готовое дерево в файле?{' '}
+              <Link href="/app/import" className="font-semibold text-gold-700 hover:underline">Загрузите его</Link>
+            </p>
           </Reveal>
           <Reveal delay={0.1} className="space-y-4">
             {[
@@ -99,8 +103,16 @@ export default async function AppHome({ searchParams }: { searchParams: Promise<
                   <Plus className="h-6 w-6" />
                 </span>
                 <span className="mt-4 block font-semibold">Новое семейное пространство</span>
-                <span className="mt-1 block text-sm text-ink-500">например, по другой линии рода</span>
+                <span className="mt-1 block text-sm text-ink-500">например, по другой линии рода</span>              </span>
+            </Link>
+          </StaggerItem>
+          <StaggerItem>
+            <Link href="/app/import" className="group flex h-full min-h-[16rem] flex-col justify-center rounded-3xl bg-cream-100 p-7 transition hover:bg-cream-200">
+              <span className="grid h-14 w-14 place-items-center rounded-full bg-white text-ink-600 transition group-hover:bg-ink-900 group-hover:text-gold-300">
+                <UploadCloud className="h-6 w-6" />
               </span>
+              <span className="mt-4 block font-semibold">Загрузить архив или дерево</span>
+              <span className="mt-1 block text-sm text-ink-500">ZIP-архив, скачанный с сайта, или JSON-файл дерева — например, подготовленный ИИ по фото схемы</span>
             </Link>
           </StaggerItem>
         </Stagger>
