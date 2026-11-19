@@ -1,19 +1,14 @@
 import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
-import crypto from 'node:crypto';
-import { Readable, Transform } from 'node:stream';
-import { pipeline } from 'node:stream/promises';
 import { NextResponse } from 'next/server';
 import yauzl from 'yauzl';
 import { getCurrentUser } from '@/lib/auth';
 import { canEdit, getMembership } from '@/lib/family';
 import { importFamily, normalizeImport } from '@/lib/family-import';
+import { uploadPath } from '@/lib/import-upload';
 
 export const runtime = 'nodejs';
 export const maxDuration = 600;
 
-const MAX_ARCHIVE = 6 * 1024 * 1024 * 1024;
 const MAX_JSON = 30 * 1024 * 1024;
 const MAX_FILE = 200 * 1024 * 1024;
 
@@ -61,27 +56,15 @@ export async function POST(req: Request) {
     const m = await getMembership(target, user.id);
     if (!m || !canEdit(m.role)) return fail('Недостаточно прав для этой семьи', 403);
   }
-  if (!req.body) return fail('Выберите файл');
-  const fileName = decodeURIComponent(req.headers.get('x-file-name') || 'archive');
-
-  const tmp = path.join(os.tmpdir(), `import-${crypto.randomBytes(8).toString('hex')}`);
-  let size = 0;
+  const fileName = decodeURIComponent(url.searchParams.get('file') || 'archive');
+  let tmp: string;
   try {
-    const limit = new Transform({
-      transform(chunk: Buffer, _enc, cb) {
-        size += chunk.length;
-        cb(size > MAX_ARCHIVE ? new Error('Архив слишком большой (больше 6 ГБ)') : null, chunk);
-      },
-    });
-    await pipeline(Readable.fromWeb(req.body as import('node:stream/web').ReadableStream), limit, fs.createWriteStream(tmp));
+    tmp = uploadPath(user.id, url.searchParams.get('upload') ?? '');
   } catch (e) {
-    await fs.promises.rm(tmp, { force: true });
-    return fail(e instanceof Error && e.message.startsWith('Архив') ? e.message : 'Загрузка прервалась. Попробуйте ещё раз.');
+    return fail((e as Error).message);
   }
-  if (!size) {
-    await fs.promises.rm(tmp, { force: true });
-    return fail('Файл пустой');
-  }
+  const size = (await fs.promises.stat(tmp).catch(() => null))?.size ?? 0;
+  if (!size) return fail('Файл не загружен или пустой. Попробуйте ещё раз.');
 
   // Разбор идёт потоком строк NDJSON: прокси не обрывает долгую обработку, а клиент видит прогресс
   const enc = new TextEncoder();

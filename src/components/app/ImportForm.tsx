@@ -7,6 +7,41 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { AlertCircle, ArrowRight, CheckCircle2, FileArchive, FileJson, Loader2, UploadCloud, X } from 'lucide-react';
 import { cn, formatSize, plural } from '@/lib/utils';
 
+const CHUNK = 32 * 1024 * 1024;
+
+type Line = Partial<Result> & { ok?: boolean; error?: string; stage?: string; done?: number; total?: number };
+
+/** POST через XHR: прогресс отправки и чтение потоковых строк ответа (NDJSON) */
+function post(url: string, body: Blob | null, onUpload?: (loaded: number) => void, onLines?: (lines: Line[]) => void) {
+  return new Promise<Line[]>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+    xhr.setRequestHeader('content-type', 'application/octet-stream');
+    const parse = () =>
+      xhr.responseText
+        .split('\n')
+        .filter(Boolean)
+        .flatMap((l) => {
+          try {
+            return [JSON.parse(l) as Line];
+          } catch {
+            return [];
+          }
+        });
+    if (onUpload) xhr.upload.onprogress = (e) => onUpload(e.loaded);
+    if (onLines) xhr.onprogress = () => onLines(parse());
+    xhr.onload = () => {
+      const lines = parse();
+      if (xhr.status >= 400) {
+        const err = lines.find((l) => l.error)?.error ?? (xhr.status === 413 ? 'Файл слишком большой для загрузки' : `Ошибка сервера (${xhr.status})`);
+        reject(Object.assign(new Error(err), { name: 'ServerError' }));
+      } else resolve(lines);
+    };
+    xhr.onerror = () => reject(new Error('network'));
+    xhr.send(body);
+  });
+}
+
 type Result = { familyId: string; persons: number; relations: number; materials: number; files: number; warnings: string[]; moreWarnings: number };
 
 export function ImportForm({ families, defaultTarget }: { families: { id: string; name: string }[]; defaultTarget: string }) {
@@ -30,52 +65,45 @@ export function ImportForm({ families, defaultTarget }: { families: { id: string
     setFile(f);
   };
 
-  const submit = () => {
+  const submit = async () => {
     if (!file || busy) return;
+    if (!file.size) return setError('Файл пустой');
     setError(null);
     setResult(null);
     setProgress(0);
-    const q = new URLSearchParams({ target });
-    if (target === 'new' && name.trim()) q.set('name', name.trim());
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', `/api/import?${q}`);
-    xhr.setRequestHeader('x-file-name', encodeURIComponent(file.name));
-    xhr.setRequestHeader('content-type', file.type || 'application/octet-stream');
-    xhr.upload.onprogress = (e) => e.lengthComputable && setProgress(e.loaded / e.total);
-    const lines = () =>
-      xhr.responseText
-        .split('\n')
-        .filter(Boolean)
-        .map((l) => {
+    const id = Array.from(crypto.getRandomValues(new Uint8Array(16)), (b) => b.toString(16).padStart(2, '0')).join('');
+    try {
+      for (let off = 0; off < file.size; off += CHUNK) {
+        const part = file.slice(off, off + CHUNK);
+        let attempt = 0;
+        for (;;) {
           try {
-            return JSON.parse(l) as Result & { error?: string; ok?: boolean; stage?: string; done?: number; total?: number };
-          } catch {
-            return null;
+            await post(`/api/import/chunk?id=${id}&offset=${off}`, part, (loaded) => setProgress(Math.min(1, (off + loaded) / file.size)));
+            break;
+          } catch (e) {
+            if (++attempt >= 3 || (e as Error).name === 'ServerError') throw e;
+            await new Promise((r) => setTimeout(r, 1500 * attempt));
           }
-        })
-        .filter((x) => x !== null);
-    xhr.onprogress = () => {
-      const f = lines().filter((l) => l.stage === 'files').pop();
-      if (f?.total) setStage(`Сохраняем фото и материалы: ${f.done} из ${f.total}`);
-    };
-    xhr.onload = () => {
-      setProgress(null);
-      setStage(null);
-      const body = lines().filter((l) => l.ok || l.error).pop() ?? null;
-      if (xhr.status >= 400 || !body || body.error) {
-        setError(body?.error ?? (xhr.status === 413 ? 'Файл слишком большой для загрузки' : 'Не удалось загрузить файл. Попробуйте ещё раз.'));
-        return;
+        }
       }
-      setResult(body);
+      setProgress(1);
+      const q = new URLSearchParams({ target, upload: id, file: file.name });
+      if (target === 'new' && name.trim()) q.set('name', name.trim());
+      const lines = await post(`/api/import?${q}`, null, undefined, (ls) => {
+        const f = ls.filter((l) => l.stage === 'files').pop();
+        if (f?.total) setStage(`Сохраняем фото и материалы: ${f.done} из ${f.total}`);
+      });
+      const body = lines.filter((l) => l.ok || l.error).pop();
+      if (!body || body.error) throw Object.assign(new Error(body?.error ?? 'Не удалось обработать файл. Попробуйте ещё раз.'), { name: 'ServerError' });
+      setResult(body as Result);
       setFile(null);
       router.refresh();
-    };
-    xhr.onerror = () => {
+    } catch (e) {
+      setError(e instanceof Error && e.name === 'ServerError' ? e.message : 'Соединение прервалось. Проверьте интернет и попробуйте ещё раз.');
+    } finally {
       setProgress(null);
       setStage(null);
-      setError('Соединение прервалось. Проверьте интернет и попробуйте ещё раз.');
-    };
-    xhr.send(file);
+    }
   };
 
   const Icon = file && /\.json$/i.test(file.name) ? FileJson : FileArchive;
